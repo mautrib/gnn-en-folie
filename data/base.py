@@ -28,6 +28,13 @@ def _adjacency_to_dgl(adj):
     gdgl = dgl.graph((src,dst),num_nodes=N)
     return gdgl
 
+def dense_tensor_to_edge_format(dense_tensor: torch.Tensor, dgl_graph: dgl.graph):
+    assert dense_tensor.dim()==2 and dense_tensor.shape[0]==dense_tensor.shape[1], f"Dense Tensor isn't of shape (N,N)"
+    N,_ = dense_tensor.shape
+    src,rst = dgl_graph.edges()
+    edge_tensor = dense_tensor[src,rst]
+    return edge_tensor
+
 def connectivity_to_dgl(connectivity_graph, sparsify=None, distances = None):
     assert connectivity_graph.dim()==3, "Tensor dimension not recognized. Should be (N_nodes, N_nodes, N_features)"
     N, _, N_feats = connectivity_graph.shape
@@ -43,12 +50,14 @@ def connectivity_to_dgl(connectivity_graph, sparsify=None, distances = None):
         gdgl = _adjacency_to_dgl(adjacency)
         gdgl.ndata['feat'] = degrees.diagonal().reshape((N,1)) #Adding degrees to node features
         if not is_adj(edge_features):
-            src,rst = gdgl.edges() #For now only contains node features
-            efeats = edge_features[src,rst]
-            gdgl.edata["feat"] = efeats.reshape((efeats,1))
+            #src,rst = gdgl.edges() #For now only contains node features
+            #efeats = edge_features[src,rst]
+            efeats = dense_tensor_to_edge_format(edge_features, gdgl)
+            gdgl.edata["feat"] = efeats.unsqueeze(-1)
     else:
         raise NotImplementedError("Haven't implemented the function for more Features than one per edge (problem is how to check for the adjacency matrix).")
     return gdgl
+
     
 
 class Base_Generator(torch.utils.data.Dataset):

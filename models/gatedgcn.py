@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
-import torch.functional as F
+import torch.nn.functional as F
 import pytorch_lightning as pl
+import dgl.function as fn
 
 class MLPReadout(nn.Module):
 
@@ -135,10 +136,9 @@ class GatedGCNLayerIsotropic(nn.Module):
 
 class GatedGCNNet_Edge(pl.LightningModule):
     
-    def __init__(self, n_layers=4, in_dim=1, in_dim_edge=1, hidden_dim=20, out_features=20, loss = nn.BCELoss(reduction='mean'), normalize = nn.Sigmoid(),**kwargs):
+    def __init__(self, n_layers=4, in_dim=1, in_dim_edge=1, hidden_dim=20, n_classes=2, loss = nn.CrossEntropyLoss(reduction='mean'), normalize = nn.Sigmoid(),**kwargs):
         super().__init__()
         out_dim = hidden_dim
-        n_classes = out_features
         dropout = 0 
 
         self.loss = loss
@@ -184,6 +184,7 @@ class GatedGCNNet_Edge(pl.LightningModule):
         x = self(g)
         probas = self.normalize(x)
         loss_value = self.loss(probas, target)
+        self.log('train_loss', loss_value)
         return loss_value
     
     def validation_step(self, batch, batch_idx):
@@ -191,8 +192,7 @@ class GatedGCNNet_Edge(pl.LightningModule):
         x = self(g)
         probas = self.normalize(x)
         loss_value = self.loss(probas, target)
-        result = pl.EvalResult()
-        result.log('val_loss', loss_value)
+        self.log('val_loss', loss_value)
         return loss_value
 
     def configure_optimizers(self):

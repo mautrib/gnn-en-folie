@@ -1,3 +1,20 @@
+#datasets
+dataset_*/
+
+#Pyconcorde residuals
+*.res 
+*.sol 
+*.pul
+#The utility to clean these residuals
+clean.sh 
+
+#VSCode
+.vscode/
+
+#Weight&Biases runs
+wandb/
+
+#PYTHON GITIGNORE
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

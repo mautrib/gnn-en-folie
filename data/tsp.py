@@ -1,6 +1,6 @@
 import os
 import torch
-from data.base import Base_Generator, connectivity_to_dgl
+from data.base import Base_Generator, connectivity_to_dgl, dense_tensor_to_edge_format
 from toolbox import utils
 import math
 import random
@@ -126,16 +126,17 @@ class TSP_Generator(Base_Generator):
             print('Creating dataset at {}'.format(path))
             l_data = self.create_dataset()
             print('Saving dataset at {}'.format(path))
-            torch.save((l_data, self.pos), path)
+            torch.save((l_data, self.positions), path)
             print('Creating dataset at {}'.format(path_dgl))
             print("Converting data to DGL format")
             l_data_dgl = []
             for data,target in tqdm.tqdm(l_data):
                 elt_dgl = connectivity_to_dgl(data)
-                l_data_dgl.append((elt_dgl,target))
+                target_dgl = dense_tensor_to_edge_format(target,elt_dgl)
+                l_data_dgl.append((elt_dgl,target_dgl))
             print("Conversion ended.")
             print('Saving dataset at {}'.format(path_dgl))
-            torch.save((l_data_dgl, self.pos), path_dgl)
+            torch.save((l_data_dgl, self.positions), path_dgl)
             if use_dgl:
                 self.data = l_data_dgl
             else:
@@ -159,7 +160,7 @@ class TSP_Generator(Base_Generator):
 
         B = distance_matrix_tensor_representation(W)
         
-        SOL = torch.zeros((self.n_vertices,self.n_vertices),dtype=torch.float)
+        SOL = torch.zeros((self.n_vertices,self.n_vertices),dtype=int)
         prec = solution.tour[-1]
         for i in range(self.n_vertices):
             curr = solution.tour[i]
