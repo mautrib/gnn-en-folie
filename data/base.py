@@ -1,4 +1,3 @@
-from operator import is_
 import torch
 import os
 import tqdm
@@ -58,7 +57,14 @@ def connectivity_to_dgl(connectivity_graph, sparsify=None, distances = None):
         raise NotImplementedError("Haven't implemented the function for more Features than one per edge (problem is how to check for the adjacency matrix).")
     return gdgl
 
-    
+def adjacency_matrix_to_tensor_representation(W):
+    """ Create a tensor B[:,:,1] = W and B[i,i,0] = deg(i)"""
+    degrees = W.sum(1)
+    B = torch.zeros((len(W), len(W), 2))
+    B[:, :, 1] = W
+    indices = torch.arange(len(W))
+    B[indices, indices, 0] = degrees
+    return B
 
 class Base_Generator(torch.utils.data.Dataset):
     def __init__(self, name, path_dataset, num_examples):
