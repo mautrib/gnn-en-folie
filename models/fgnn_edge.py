@@ -24,7 +24,6 @@ class FGNN_Edge(pl.LightningModule):
     def __init__(self, args_dict, normalize=torch.nn.Sigmoid(), loss=torch.nn.BCELoss(reduction='mean')):
         super().__init__()
         self.model = Simple_Edge_Embedding(**args_dict)
-        self.normalize = normalize
         self.loss = EdgeClassifLoss(normalize, loss)
         
     def forward(self, x):
@@ -33,7 +32,6 @@ class FGNN_Edge(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         g, target = batch
         x = self(g)
-        probas = self.normalize(x)
         probas = probas.squeeze(-1)
         loss_value = self.loss(probas, target)
         self.log('train_loss', loss_value)
@@ -42,7 +40,6 @@ class FGNN_Edge(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         g, target = batch
         x = self(g)
-        probas = self.normalize(x)
         probas = probas.squeeze(-1)
         loss_value = self.loss(probas, target)
         self.log('val_loss', loss_value)
