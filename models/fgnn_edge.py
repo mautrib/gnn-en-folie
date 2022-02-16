@@ -48,4 +48,4 @@ class FGNN_Edge(pl.LightningModule):
     def configure_optimizers(self):
             optimizer = torch.optim.Adam(self.parameters(), lr=1e-4)
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5,patience=3, verbose=True)
-            return optimizer, scheduler
+            return [optimizer], [scheduler]
