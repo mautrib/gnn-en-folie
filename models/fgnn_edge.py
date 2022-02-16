@@ -32,16 +32,16 @@ class FGNN_Edge(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         g, target = batch
         x = self(g)
-        probas = probas.squeeze(-1)
-        loss_value = self.loss(probas, target)
+        raw_scores = x.squeeze(-1)
+        loss_value = self.loss(raw_scores, target)
         self.log('train_loss', loss_value)
         return loss_value
     
     def validation_step(self, batch, batch_idx):
         g, target = batch
         x = self(g)
-        probas = probas.squeeze(-1)
-        loss_value = self.loss(probas, target)
+        raw_scores = x.squeeze(-1)
+        loss_value = self.loss(raw_scores, target)
         self.log('val_loss', loss_value)
         return loss_value
 
