@@ -26,7 +26,8 @@ def get_observer(config):
 
 def get_trainer_config(config):
     trainer_config = config['train']
-    trainer_config['accelerator'] = config['device']
+    accelerator_config = utils.get_accelerator_dict(config['device'])
+    trainer_config.update(accelerator_config)
     clean_config = utils.restrict_dict_to_function(pl.Trainer.__init__, trainer_config)
     return clean_config
 
