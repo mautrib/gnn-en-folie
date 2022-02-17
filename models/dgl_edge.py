@@ -9,6 +9,7 @@ class DGLEdgeLoss(torch.nn.Module):
         self.normalize = normalize
 
     def forward(self, raw_scores, target):
+        target = target.edata['solution']
         preds = self.normalize(raw_scores)
         loss = self.loss(preds,target)
         return torch.mean(loss)

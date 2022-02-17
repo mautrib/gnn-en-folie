@@ -1,6 +1,6 @@
 import os
 import torch
-from data.base import Base_Generator, connectivity_to_dgl, dense_tensor_to_edge_format
+from data.base import Base_Generator, connectivity_to_dgl, solution_connectivity_to_dgl
 from toolbox import utils
 import math
 import random
@@ -132,7 +132,7 @@ class TSP_Generator(Base_Generator):
             l_data_dgl = []
             for data,target in tqdm.tqdm(l_data):
                 elt_dgl = connectivity_to_dgl(data)
-                target_dgl = dense_tensor_to_edge_format(target,elt_dgl)
+                target_dgl = self._solution_conversion(target, elt_dgl)
                 l_data_dgl.append((elt_dgl,target_dgl))
             print("Conversion ended.")
             print('Saving dataset at {}'.format(path_dgl))
@@ -170,3 +170,11 @@ class TSP_Generator(Base_Generator):
         
         self.positions.append((xs,ys))
         return (B, SOL)
+    
+    @staticmethod
+    def _solution_conversion(target, dgl_graph):
+        num_nodes = data_dgl.num_nodes()
+        target_dgl = dgl.graph(data_dgl.edges(), num_nodes=num_nodes)
+        edge_features = dense_tensor_to_edge_format(target, target_dgl)
+        target_dgl.edata['solution'] = edge_features
+        return target_dgl

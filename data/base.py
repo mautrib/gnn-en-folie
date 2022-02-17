@@ -32,7 +32,7 @@ def dense_tensor_to_edge_format(dense_tensor: torch.Tensor, dgl_graph: dgl.graph
     N,_ = dense_tensor.shape
     src,rst = dgl_graph.edges()
     edge_tensor = dense_tensor[src,rst]
-    return edge_tensor
+    return edge_tensor.unsqueeze(-1)
 
 def connectivity_to_dgl(connectivity_graph, sparsify=None, distances = None):
     assert connectivity_graph.dim()==3, "Tensor dimension not recognized. Should be (N_nodes, N_nodes, N_features)"
@@ -52,7 +52,7 @@ def connectivity_to_dgl(connectivity_graph, sparsify=None, distances = None):
             #src,rst = gdgl.edges() #For now only contains node features
             #efeats = edge_features[src,rst]
             efeats = dense_tensor_to_edge_format(edge_features, gdgl)
-            gdgl.edata["feat"] = efeats.unsqueeze(-1)
+            gdgl.edata["feat"] = efeats
     else:
         raise NotImplementedError("Haven't implemented the function for more Features than one per edge (problem is how to check for the adjacency matrix).")
     return gdgl
@@ -65,6 +65,7 @@ def adjacency_matrix_to_tensor_representation(W):
     indices = torch.arange(len(W))
     B[indices, indices, 0] = degrees
     return B
+
 
 class Base_Generator(torch.utils.data.Dataset):
     def __init__(self, name, path_dataset, num_examples):
@@ -99,7 +100,8 @@ class Base_Generator(torch.utils.data.Dataset):
             l_data_dgl = []
             for data,target in tqdm.tqdm(l_data):
                 elt_dgl = connectivity_to_dgl(data)
-                l_data_dgl.append((elt_dgl,target))
+                target_dgl = self._solution_conversion(target, elt_dgl)
+                l_data_dgl.append((elt_dgl,target_dgl))
             print("Conversion ended.")
             print('Saving dataset at {}'.format(path_dgl))
             torch.save(l_data_dgl, path_dgl)
