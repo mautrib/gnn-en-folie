@@ -1,4 +1,4 @@
-from models.gatedgcn import GatedGCNNet_Edge
+from models.dgl.gatedgcn import GatedGCNNet_Edge
 import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader

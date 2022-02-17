@@ -1,6 +1,7 @@
 import pytorch_lightning as pl
 import torch
-from models.fgnn import Simple_Edge_Embedding
+from models.base_model import GNN_Abstract_Base_Class
+from models.fgnn.fgnn import Simple_Edge_Embedding
 
 class EdgeClassifLoss(torch.nn.Module):
     def __init__(self, normalize=torch.nn.Sigmoid(), loss=torch.nn.BCELoss(reduction='mean')):
@@ -19,12 +20,11 @@ class EdgeClassifLoss(torch.nn.Module):
         loss = self.loss(preds,target)
         return torch.mean(loss)
 
-class FGNN_Edge(pl.LightningModule):
+class FGNN_Edge(GNN_Abstract_Base_Class):
     
-    def __init__(self, args_dict, normalize=torch.nn.Sigmoid(), loss=torch.nn.BCELoss(reduction='mean')):
-        super().__init__()
-        self.model = Simple_Edge_Embedding(**args_dict)
-        self.loss = EdgeClassifLoss(normalize, loss)
+    def __init__(self, model, optim_args):
+        super().__init__(model, optim_args)
+        self.loss = EdgeClassifLoss()
         
     def forward(self, x):
         return self.model(x)
