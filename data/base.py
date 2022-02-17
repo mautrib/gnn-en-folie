@@ -110,6 +110,10 @@ class Base_Generator(torch.utils.data.Dataset):
             else:
                 self.data = l_data
     
+    @staticmethod
+    def _solution_conversion(target, dgl_graph):
+        raise NotImplementedError("This function should be implemented in your generator. Base_Generator is an abstract class and this function should not be called.")
+    
     def remove_file(self):
         os.remove(os.path.join(self.path_dataset, self.name + '.pkl'))
     
