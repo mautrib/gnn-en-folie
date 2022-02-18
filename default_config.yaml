@@ -1,7 +1,7 @@
 ---
 name: gnnpl
 device: gpu:1 #Can be 'cpu', 'gpu', 'tpu', 'ipu' (with an added ':#number of devices', default, 1 [ex: 'gpu:2]') or auto
-problem: 'tsp' 
+problem: 'mcp' 
 test_enabled: Yes
 
 data:
@@ -13,8 +13,11 @@ data:
         sparsify: None #Only works for not fgnns. Put to None if you don't want sparsifying, to an int if you do
         problems:
             tsp:
-              distance_used: EUC_2D
-              generative_model: Square01
+                distance_used: EUC_2D
+                generative_model: Square01
+            mcp:
+                edge_density: 0.8
+                clique_size: 4 #To not plant a clique, use 0
             
     test: #Test data generation parameters
         num_examples_test: 1000
@@ -22,8 +25,11 @@ data:
         sparsify: None
         problems:
             tsp:
-              distance_used: EUC_2D
-              generative_model: Square01
+                distance_used: EUC_2D
+                generative_model: Square01
+            mcp:
+                edge_density: 0.8
+                clique_size: 4 #To not plant a clique, use 0
 
 train: # Training parameters, you can add any Pytorch Lightning Trainer Arguments and pytorch DataLoader arguments
     max_epochs: 100
@@ -55,7 +61,6 @@ arch: # Architecture and model
             in_dim_edge: 1
             hidden_dim: 20
             n_classes: 2
-
 
 observers:
     base_dir: observers #Name of the path where loggers will save their files if needed
