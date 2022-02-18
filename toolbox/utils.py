@@ -1,6 +1,7 @@
 import torch
 import os
 import inspect
+import copy
 
 # create directory if it does not exist
 def check_dir(dir_path):
@@ -45,4 +46,18 @@ def get_accelerator_dict(device: str):
     else:
         raise NotImplementedError(f"Accelerator {accelerator} not recognized.")
     return accelerator_dict
-    
+
+def clean_config(config):
+    problem_key = config['problem']
+    arch_name = config['arch']['name']
+    clean_one = copy.deepcopy(config)
+    for key in config['data']['train']['problems']: #Other data values for train/val
+        if key!=problem_key:
+            del clean_one['data']['train']['problems'][key]
+    for key in config['data']['test']['problems']:  #Other data values for test
+        if key!=problem_key:
+            del clean_one['data']['test']['problems'][key]
+    for key in config['arch']['configs']:  #Other architectures
+        if key!=arch_name:
+            del clean_one['arch']['configs'][key]
+    return clean_one

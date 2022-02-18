@@ -47,6 +47,7 @@ def train(config):
 
 def main():
     config = get_config()
+    config = utils.clean_config(config)
     train(config)
 
 if __name__=="__main__":
