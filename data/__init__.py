@@ -12,7 +12,7 @@ TRAIN_VAL_TEST_LOOKUP = {
     'test': 'test'
 } #If we're validating or testing, we'll check the config under the 'train' key. For testing, it's 'test'
 
-def tensor_to_pytorch(generator, batch_size=32, shuffle=True, num_workers=4, **kwargs):
+def tensor_to_pytorch(generator, batch_size=32, shuffle=False, num_workers=4, **kwargs):
     pytorch_loader = DataLoader(generator, batch_size=batch_size,shuffle=shuffle, num_workers=num_workers)
     return pytorch_loader
 
@@ -28,11 +28,11 @@ def _collate_fn_dgl(samples_list):
     #target_batch = target_batch.squeeze(0)
     return (input_batch,target_batch)
 
-def dgl_to_pytorch(generator, batch_size=32, shuffle=True, num_workers=4, **kwargs):
+def dgl_to_pytorch(generator, batch_size=32, shuffle=False, num_workers=4, **kwargs):
     pytorch_loader = DataLoader(generator, batch_size=batch_size,shuffle=shuffle, num_workers=num_workers, collate_fn=_collate_fn_dgl)
     return pytorch_loader
 
-def get_dataset(config:dict, type:str, dgl_check=True):
+def get_dataset(config:dict, type:str, dgl_check=True,dataloader_args={}):
     problem_key = config['problem'].lower()
     if problem_key == 'tsp':
         Generator_Class = TSP_Generator
@@ -57,12 +57,12 @@ def get_dataset(config:dict, type:str, dgl_check=True):
     if use_dgl:
         raise NotImplementedError(f"Meh.")
     else:
-        dataloaded = tensor_to_pytorch(dataset,**loader_config)
+        dataloaded = tensor_to_pytorch(dataset,**loader_config, **dataloader_args)
 
     return dataloaded
 
 def get_train_val_datasets(config:dict, dgl_check=True):
-    train_dataset = get_dataset(config, 'train', dgl_check=dgl_check)
+    train_dataset = get_dataset(config, 'train', dgl_check=dgl_check, dataloader_args={'shuffle':True})
     val_dataset = get_dataset(config, 'val', dgl_check=dgl_check)
     return train_dataset, val_dataset
 
