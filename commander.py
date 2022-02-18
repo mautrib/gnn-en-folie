@@ -20,6 +20,7 @@ def get_observer(config):
     observer = config['observers']['observer']
     if observer=='wandb':
         logger = WandbLogger(project=config['name'], log_model="all", save_dir=path)
+        logger.experiment.config.update(config)
     else:
         raise NotImplementedError(f"Observer {observer} not implemented.")
     return logger

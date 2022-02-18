@@ -91,8 +91,7 @@ class TSP_Generator(Base_Generator):
                                                      self.distance,
                                                      num_examples,
                                                      self.n_vertices)
-        path_dataset = os.path.join(args['path_dataset'],
-                                         subfolder_name)
+        path_dataset = os.path.join(args['path_dataset'], 'tsp', subfolder_name)
         super().__init__(name, path_dataset, num_examples)
         self.data = []
         
