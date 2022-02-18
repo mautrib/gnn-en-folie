@@ -48,9 +48,15 @@ arch: # Architecture and model
             in_features: 64
             out_features: 1
             depth_of_mlp: 3
-            input_embed: Yes 
+            input_embed: Yes
+        gatedgcn:
+            n_layers: 4
+            in_dim: 1
+            in_dim_edge: 1
+            hidden_dim: 20
+            n_classes: 2
 
 
 observers:
     base_dir: observers #Name of the path where loggers will save their files if needed
-    observer: wandb
+    observer: wandb #For now, only wandb

@@ -20,12 +20,8 @@ def _collate_fn_dgl(samples_list):
     bs = len(samples_list)
     input1_list = [input1 for (input1, _) in samples_list]
     target_list = [target for (_,target) in samples_list]
-    shape = target_list[0].shape
     input_batch = dglbatch(input1_list)
-    target_batch = torch.zeros((bs,)+ shape, dtype=target_list[0].dtype)
-    for i,target in enumerate(target_list):
-        target_batch[i] = target
-    #target_batch = target_batch.squeeze(0)
+    target_batch = dglbatch(target_list)
     return (input_batch,target_batch)
 
 def dgl_to_pytorch(generator, batch_size=32, shuffle=False, num_workers=4, **kwargs):
@@ -55,7 +51,7 @@ def get_dataset(config:dict, type:str, dgl_check=True,dataloader_args={}):
 
     loader_config = config['train']
     if use_dgl:
-        raise NotImplementedError(f"Meh.")
+        dataloaded = dgl_to_pytorch(dataset, **loader_config, **dataloader_args)
     else:
         dataloaded = tensor_to_pytorch(dataset,**loader_config, **dataloader_args)
 

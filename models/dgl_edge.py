@@ -9,7 +9,7 @@ class DGLEdgeLoss(torch.nn.Module):
         self.normalize = normalize
 
     def forward(self, raw_scores, target):
-        target = target.edata['solution']
+        target = target.edata['solution'].squeeze(-1) #Because features are 2D column vectors
         preds = self.normalize(raw_scores)
         loss = self.loss(preds,target)
         return torch.mean(loss)

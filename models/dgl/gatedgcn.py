@@ -134,15 +134,12 @@ class GatedGCNLayerIsotropic(nn.Module):
                                              self.in_channels,
                                              self.out_channels)
 
-class GatedGCNNet_Edge(pl.LightningModule):
+class GatedGCNNet_Edge(nn.Module):
     
-    def __init__(self, n_layers=4, in_dim=1, in_dim_edge=1, hidden_dim=20, n_classes=2, loss = nn.CrossEntropyLoss(reduction='mean'), normalize = nn.Sigmoid(),**kwargs):
+    def __init__(self, n_layers=4, in_dim=1, in_dim_edge=1, hidden_dim=20, n_classes=2):
         super().__init__()
         out_dim = hidden_dim
-        dropout = 0 
-
-        self.loss = loss
-        self.normalize = normalize
+        dropout = 0
 
         self.batch_norm = True #net_params['batch_norm']
         self.residual = True
@@ -178,26 +175,6 @@ class GatedGCNNet_Edge(pl.LightningModule):
         g.apply_edges(_edge_feat)
 
         return g.edata['e']
-    
-    def training_step(self, batch, batch_idx):
-        g, target = batch
-        x = self(g)
-        probas = self.normalize(x)
-        loss_value = self.loss(probas, target)
-        self.log('train_loss', loss_value)
-        return loss_value
-    
-    def validation_step(self, batch, batch_idx):
-        g, target = batch
-        x = self(g)
-        probas = self.normalize(x)
-        loss_value = self.loss(probas, target)
-        self.log('val_loss', loss_value)
-        return loss_value
-
-    def configure_optimizers(self):
-            optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
-            return optimizer    
 
 def main():
     model = GatedGCNNet_Edge()
