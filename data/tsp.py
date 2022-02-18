@@ -6,8 +6,6 @@ from toolbox import utils
 import math
 import random
 import networkx
-from sklearn.decomposition import PCA
-from numpy import pi,angle,cos,sin
 from numpy.random import default_rng
 import tqdm
 
@@ -68,16 +66,16 @@ def distance_matrix_tensor_representation(W):
     B[indices, indices, 0] = degrees
     return B
 
-def normalize_tsp(xs,ys):
-    """ 'Normalizes' points positions by moving they in a way where the principal component of the point cloud is directed vertically"""
-    X = [(x,y) for x,y in zip(xs,ys)]
-    pca = PCA(n_components=1)
-    pca.fit(X)
-    pc = pca.components_[0]
-    rot_angle = pi/2 - angle(pc[0]+1j*pc[1])
-    x_rot = [ x*cos(rot_angle) - y*sin(rot_angle) for x,y in X ]
-    y_rot = [ x*sin(rot_angle) + y*cos(rot_angle) for x,y in X ]
-    return x_rot,y_rot
+# def normalize_tsp(xs,ys):
+#     """ 'Normalizes' points positions by moving they in a way where the principal component of the point cloud is directed vertically"""
+#     X = [(x,y) for x,y in zip(xs,ys)]
+#     pca = PCA(n_components=1)
+#     pca.fit(X)
+#     pc = pca.components_[0]
+#     rot_angle = pi/2 - angle(pc[0]+1j*pc[1])
+#     x_rot = [ x*cos(rot_angle) - y*sin(rot_angle) for x,y in X ]
+#     y_rot = [ x*sin(rot_angle) + y*cos(rot_angle) for x,y in X ]
+#     return x_rot,y_rot
 
 class TSP_Generator(Base_Generator):
     """
