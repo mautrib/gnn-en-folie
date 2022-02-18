@@ -1,5 +1,6 @@
 import pytorch_lightning as pl
 import torch.optim
+from toolbox.utils import get_lr
 
 class GNN_Abstract_Base_Class(pl.LightningModule):
 
@@ -17,3 +18,8 @@ class GNN_Abstract_Base_Class(pl.LightningModule):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.initial_lr)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, verbose=True, **(self.scheduler_args))
         return {'optimizer':optimizer, 'lr_scheduler': scheduler, 'monitor': self.scheduler_monitor}
+    
+    def on_epoch_start(self) -> None:
+        optim = self.optimizers()
+        lr = get_lr(optim)
+        self.log('lr',lr)

@@ -61,3 +61,7 @@ def clean_config(config):
         if key!=arch_name:
             del clean_one['arch']['configs'][key]
     return clean_one
+
+def get_lr(optimizer):
+    for param_group in optimizer.param_groups:
+        return param_group['lr']
