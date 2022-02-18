@@ -19,7 +19,7 @@ def get_observer(config):
     utils.check_dir(path)
     observer = config['observers']['observer']
     if observer=='wandb':
-        logger = WandbLogger(project=config['name'], log_model="all", save_dir=path)
+        logger = WandbLogger(project=f"{config['project']}_{config['problem']}", log_model="all", save_dir=path)
         logger.experiment.config.update(config)
     else:
         raise NotImplementedError(f"Observer {observer} not implemented.")
