@@ -43,7 +43,7 @@ class MCP_Generator(Base_Generator):
             K = self.mcp_ind_to_adj(K2,self.n_vertices)
         return (B, K)
     
-    def _get_max_clique(self, W):
+    def _get_max_clique(self, g, W):
         mc = max_clique(g)
         l_indices = [(id_i,id_j) for id_i in mc for id_j in mc if id_i!=id_j]
         t_ind = torch.tensor(l_indices)
@@ -64,7 +64,7 @@ class MCP_Generator(Base_Generator):
             raise ValueError('Generative model {} not supported'
                              .format(self.generative_model))
         if self.clique_size==0:
-            B,K = self._get_max_clique(W)
+            B,K = self._get_max_clique(g)
         else:
             B,K = self._plant_clique(W)
         return (B,K)
