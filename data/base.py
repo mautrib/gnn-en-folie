@@ -72,6 +72,16 @@ class Base_Generator(torch.utils.data.Dataset):
         self.path_dataset = path_dataset
         self.name = name
         self.num_examples = num_examples
+    
+    def converting_dataset_to_dgl(self, l_data):
+        print("Converting data to DGL format")
+        l_data_dgl = []
+        for data,target in tqdm.tqdm(l_data):
+            elt_dgl = connectivity_to_dgl(data)
+            target_dgl = self._solution_conversion(target, elt_dgl)
+            l_data_dgl.append((elt_dgl,target_dgl))
+        print("Conversion ended.")
+        return l_data_dgl
 
     def load_dataset(self, use_dgl=False):
         """
@@ -82,10 +92,20 @@ class Base_Generator(torch.utils.data.Dataset):
         filename_dgl = self.name + '_dgl.pkl'
         path = os.path.join(self.path_dataset, filename)
         path_dgl = os.path.join(self.path_dataset, filename_dgl)
-        if os.path.exists(path):
+        data_exists = os.path.exists(path)
+        data_dgl_exists = os.path.exists(path_dgl)
+        if data_exists or data_dgl_exists:
             if use_dgl:
-                print('Reading dataset at {}'.format(path_dgl))
-                data = torch.load(path_dgl)
+                if data_dgl_exists:
+                    print('Reading dataset at {}'.format(path_dgl))
+                    data = torch.load(path_dgl)
+                else:
+                    print('DGL file does not exist. Reading from regular file.')
+                    print('Reading dataset at {}'.format(path))
+                    data = torch.load(path)
+                    data = self.converting_dataset_to_dgl(data)
+                    print('Saving dataset at {}'.format(path_dgl))
+                    torch.save(data, path_dgl)
             else:
                 print('Reading dataset at {}'.format(path))
                 data = torch.load(path)
@@ -96,13 +116,7 @@ class Base_Generator(torch.utils.data.Dataset):
             print('Saving dataset at {}'.format(path))
             torch.save(l_data, path)
             print('Creating dataset at {}'.format(path_dgl))
-            print("Converting data to DGL format")
-            l_data_dgl = []
-            for data,target in tqdm.tqdm(l_data):
-                elt_dgl = connectivity_to_dgl(data)
-                target_dgl = self._solution_conversion(target, elt_dgl)
-                l_data_dgl.append((elt_dgl,target_dgl))
-            print("Conversion ended.")
+            l_data_dgl = self.converting_dataset_to_dgl(l_data)
             print('Saving dataset at {}'.format(path_dgl))
             torch.save(l_data_dgl, path_dgl)
             if use_dgl:
@@ -112,7 +126,13 @@ class Base_Generator(torch.utils.data.Dataset):
     
     @staticmethod
     def _solution_conversion(target, dgl_graph):
-        raise NotImplementedError("This function should be implemented in your generator. Base_Generator is an abstract class and this function should not be called.")
+        """This function should convert a tensor target into a dgl graph, it should be overwritten in your inherited generator class
+        Depending on the task at hand, our method is for the graph to have various features (if the problm can be used for both, we add both):
+          - edge classification : put the solution in graph.edata['solution']
+          - node classification : put the solution in graph.ndata['solution']
+        Obviously, this is our way of handling the data, it is a compromise between space and readability, you can change it as you see fit, as long as your pytorch_lightning module handles it.
+        """
+        raise NotImplementedError("This function should be implemented in your generator. 'Base_Generator' is an abstract class and this function should be overwritten in your inherited generator class.")
     
     def remove_file(self):
         os.remove(os.path.join(self.path_dataset, self.name + '.pkl'))

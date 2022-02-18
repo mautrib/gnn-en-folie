@@ -110,10 +110,20 @@ class TSP_Generator(Base_Generator):
         filename_dgl = self.name + '_dgl.pkl'
         path = os.path.join(self.path_dataset, filename)
         path_dgl = os.path.join(self.path_dataset, filename_dgl)
-        if os.path.exists(path):
+        data_exists = os.path.exists(path)
+        data_dgl_exists = os.path.exists(path_dgl)
+        if data_exists or data_dgl_exists:
             if use_dgl:
-                print('Reading dataset at {}'.format(path_dgl))
-                data,pos = torch.load(path_dgl)
+                if data_dgl_exists:
+                    print('Reading dataset at {}'.format(path_dgl))
+                    data,pos = torch.load(path_dgl)
+                else:
+                    print('DGL file does not exist. Reading from regular file.')
+                    print('Reading dataset at {}'.format(path))
+                    data,pos = torch.load(path)
+                    data = self.converting_dataset_to_dgl(data)
+                    print('Saving dataset at {}'.format(path_dgl))
+                    torch.save(data, path_dgl)
             else:
                 print('Reading dataset at {}'.format(path))
                 data,pos = torch.load(path)
@@ -127,11 +137,7 @@ class TSP_Generator(Base_Generator):
             torch.save((l_data, self.positions), path)
             print('Creating dataset at {}'.format(path_dgl))
             print("Converting data to DGL format")
-            l_data_dgl = []
-            for data,target in tqdm.tqdm(l_data):
-                elt_dgl = connectivity_to_dgl(data)
-                target_dgl = self._solution_conversion(target, elt_dgl)
-                l_data_dgl.append((elt_dgl,target_dgl))
+            l_data_dgl = self.converting_dataset_to_dgl(l_data)
             print("Conversion ended.")
             print('Saving dataset at {}'.format(path_dgl))
             torch.save((l_data_dgl, self.positions), path_dgl)

@@ -1,10 +1,18 @@
-import logging
-from data.tsp import TSP_Generator
-import torch
 from torch.utils.data import DataLoader
 from dgl import batch as dglbatch
 from models import check_dgl_compatibility
 
+from data.tsp import TSP_Generator
+from data.mcp import MCP_Generator
+
+def get_generator_class(problem_key):
+    if problem_key == 'tsp':
+        Generator_Class = TSP_Generator
+    elif problem_key == 'mcp':
+        Generator_Class = MCP_Generator
+    else:
+        raise NotImplementedError(f"Generator for problem {problem_key} hasn't been implemented or define in data/__init__.py yet.")
+    return Generator_Class
 
 TRAIN_VAL_TEST_LOOKUP = {
     'train': 'train',
@@ -30,10 +38,8 @@ def dgl_to_pytorch(generator, batch_size=32, shuffle=False, num_workers=4, **kwa
 
 def get_dataset(config:dict, type:str, dgl_check=True,dataloader_args={}):
     problem_key = config['problem'].lower()
-    if problem_key == 'tsp':
-        Generator_Class = TSP_Generator
-    else:
-        raise NotImplementedError(f"Generator for problem {problem_key} hasn't been implemented yet.")
+
+    Generator_Class = get_generator_class(problem_key)
     
     lookup_key = TRAIN_VAL_TEST_LOOKUP[type]
 
