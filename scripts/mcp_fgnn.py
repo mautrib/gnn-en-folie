@@ -2,6 +2,9 @@ import sys, os
 sys.path.append(os.getcwd())
 from toolbox.planner import Task, Planner
 from commander import get_config, train, test
+from pytorch_lightning import seed_everything
+
+seed_everything(5344)
 
 base_path = 'scripts'
 planner_file = 'planner_files/mcp.csv'

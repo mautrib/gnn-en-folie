@@ -20,8 +20,8 @@ data:
                 clique_size: 15 #To not plant a clique, use 0
             
     test: #Test data generation parameters
-        num_examples_test: 10
-        n_vertices: 50
+        num_examples_test: 1000
+        n_vertices: 100
         sparsify: None
         problems:
             tsp:
@@ -32,8 +32,8 @@ data:
                 clique_size: 20 #To not plant a clique, use 0
 
 train: # Training parameters, you can add any Pytorch Lightning Trainer Arguments and pytorch DataLoader arguments
-    max_epochs: 5
-    batch_size:  1
+    max_epochs: 100
+    batch_size: 64
     optim_args:
         lr: !!float 1e-4
         scheduler_step: 1
@@ -63,6 +63,6 @@ arch: # Architecture and model
             n_classes: 2
 
 observers:
-    use: No
+    use: Yes
     base_dir: observers #Name of the path where loggers will save their files if needed
     observer: wandb #For now, only wandb
