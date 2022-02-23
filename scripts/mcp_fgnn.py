@@ -21,7 +21,7 @@ planner.add_tasks(tasks)
 
 base_config = get_config(config_path)
 
-while planner.n_tasks!=0:
+def step(planner):
     task = planner.next_task()
     print(f"Task: {task}")
     base_config['data']['train']['problems']['mcp']['clique_size'] = task.value
@@ -29,3 +29,7 @@ while planner.n_tasks!=0:
     trainer = train(base_config)
     test(trainer, base_config)
     planner.add_entry({task.column_name:task.value, "done":True})
+
+
+while planner.n_tasks!=0:
+    step(planner)
