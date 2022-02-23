@@ -8,6 +8,14 @@ def check_dir(dir_path):
     dir_path = dir_path.replace('//','/')
     os.makedirs(dir_path, exist_ok=True)
 
+def check_file(file_path):
+    file_path = file_path.replace('//','/')
+    dir_path = os.path.dirname(file_path)
+    check_dir(dir_path)
+    if not os.path.exists(file_path):
+        with open(file_path,'w') as f:
+            pass
+
 def is_adj(matrix):
     is_shaped = matrix.dim()==2 and matrix.shape[0]==matrix.shape[1]
     is_bool = torch.all((matrix==0) + (matrix==1))

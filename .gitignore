@@ -16,6 +16,12 @@ clean.sh
 #Weight&Biases runs
 wandb/
 
+#Pytorch Lightning files
+lightning_logs/
+
+#scripts planner files
+scripts/planner_files/
+
 #PYTHON GITIGNORE
 # Byte-compiled / optimized / DLL files
 __pycache__/
