@@ -100,4 +100,5 @@ def main():
         test(trainer, config)
 
 if __name__=="__main__":
+    pl.seed_everything(3787, workers=True)
     main()
