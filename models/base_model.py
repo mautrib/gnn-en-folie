@@ -4,7 +4,7 @@ from toolbox.utils import get_lr, restrict_dict_to_function
 
 class GNN_Abstract_Base_Class(pl.LightningModule):
 
-    def __init__(self, model, optim_args):
+    def __init__(self,model, optim_args):
         super().__init__()
         self.model = model
         self.initial_lr = optim_args['lr']

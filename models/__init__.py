@@ -37,7 +37,18 @@ def check_dgl_compatibility(use_dgl, arch_name, dgl_check=True):
         else:
             logging.exception(warning_str)
 
-def get_pipeline(config, dgl_check=True):
+def get_torch_model(config):
+    arch_name = config['arch']['name'].lower()
+    embedding = config['arch']['embedding'].lower()
+    Module_Class = MODULE_DICT[arch_name][embedding]
+    module_config = config['arch']['configs'][arch_name]
+    module = Module_Class(**module_config)
+    return module
+
+def get_optim_args(config):
+    return config['train']['optim_args']
+
+def get_pl_model(config, dgl_check=True):
     arch_name = config['arch']['name'].lower()
     embedding = config['arch']['embedding'].lower()
     use_dgl = config['arch']['use_dgl']
@@ -46,13 +57,16 @@ def get_pipeline(config, dgl_check=True):
         PL_Model = DGL_EMBEDDING_DICT[embedding]
     else:
         PL_Model = FGNN_EMBEDDING_DICT[embedding]
-    
-    Module_Class = MODULE_DICT[arch_name][embedding]
-    module_config = config['arch']['configs'][arch_name]
-    module = Module_Class(**module_config)
+    return PL_Model
 
-    optim_config = config['train']['optim_args']
-    pipeline = PL_Model(module, optim_config)
+
+def get_pipeline(config, dgl_check=True):
+    PL_Model = get_pl_model(config, dgl_check)
+    
+    module = get_torch_model(config)
+
+    optim_args = get_optim_args(config)
+    pipeline = PL_Model(module, optim_args)
 
     return pipeline
 

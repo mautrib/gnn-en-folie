@@ -2,7 +2,7 @@ import yaml
 import toolbox.utils as utils
 import os
 
-from models import get_pipeline
+from models import get_pipeline, get_pl_model, get_torch_model, get_optim_args
 from data import get_train_val_datasets
 from metrics import setup_metric
 import pytorch_lightning as pl
@@ -25,6 +25,15 @@ def get_observer(config):
         raise NotImplementedError(f"Observer {observer} not implemented.")
     return logger
 
+def load_model(config):
+    path = config['train']['start_model']
+    print(f'Loading base model from {path}... ', end = "")
+    PL_Model_Class = get_pl_model(config)
+    pl_model = PL_Model_Class.load_from_checkpoint(path, model=get_torch_model(config), optim_args=get_optim_args(config))
+    print('Done.')
+    return pl_model
+
+
 def get_trainer_config(config):
     trainer_config = config['train']
     accelerator_config = utils.get_accelerator_dict(config['device'])
@@ -40,7 +49,10 @@ def setup_trainer(config, model):
     return trainer
 
 def train(config):
-    pl_model = get_pipeline(config)
+    if config['train']['anew']:
+        pl_model = get_pipeline(config)
+    else:
+        pl_model = load_model(config)
     setup_metric(pl_model, config)
     trainer = setup_trainer(config, pl_model)
     train_dataset, val_dataset = get_train_val_datasets(config)
