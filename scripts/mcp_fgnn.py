@@ -1,3 +1,4 @@
+from copy import deepcopy
 import sys, os
 sys.path.append(os.getcwd())
 from toolbox.planner import Task, Planner
@@ -19,15 +20,16 @@ tasks = [Task('clique_size', value) for value in l_clique_sizes]
 planner = Planner(planner_path)
 planner.add_tasks(tasks)
 
-base_config = get_config(config_path)
+BASE_CONFIG = get_config(config_path)
 
 def step(planner):
     task = planner.next_task()
     print(f"Task: {task}")
-    base_config['data']['train']['problems']['mcp']['clique_size'] = task.value
-    base_config['data']['test']['problems']['mcp']['clique_size'] = task.value
-    trainer = train(base_config)
-    test(trainer, base_config)
+    config = deepcopy(BASE_CONFIG)
+    config['data']['train']['problems']['mcp']['clique_size'] = task.value
+    config['data']['test']['problems']['mcp']['clique_size'] = task.value
+    trainer = train(config)
+    test(trainer, config)
     planner.add_entry({task.column_name:task.value, "done":True})
 
 
