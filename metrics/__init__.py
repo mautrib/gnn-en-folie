@@ -19,18 +19,24 @@ def get_dgl_edge_metric(problem):
 def get_dgl_node_metric(problem):
     raise NotImplementedError()
 
-def setup_metric(pl_model: GNN_Abstract_Base_Class, config: dict)-> None:
+def setup_metric(pl_model: GNN_Abstract_Base_Class, config: dict, soft=True)-> None:
     problem = config['problem']
     use_dgl = config['arch']['use_dgl']
     embed = config['arch']['embedding']
-    if use_dgl and embed=='edge':
-        metric_fn = get_dgl_edge_metric(problem)
-    elif use_dgl and embed=='node':
-        metric_fn = get_dgl_node_metric(problem)
-    elif not(use_dgl) and embed=='edge':
-        metric_fn = get_fgnn_edge_metric(problem)
-    elif not(use_dgl) and embed=='node':
-        metric_fn = get_fgnn_node_metric(problem)
-    pl_model.attach_metric_function(metric_fn, start_using_metric=True)
+    try:
+        if use_dgl and embed=='edge':
+            metric_fn = get_dgl_edge_metric(problem)
+        elif use_dgl and embed=='node':
+            metric_fn = get_dgl_node_metric(problem)
+        elif not(use_dgl) and embed=='edge':
+            metric_fn = get_fgnn_edge_metric(problem)
+        elif not(use_dgl) and embed=='node':
+            metric_fn = get_fgnn_node_metric(problem)
+        pl_model.attach_metric_function(metric_fn, start_using_metric=True)
+    except NotImplementedError as ne:
+        if not soft:
+            raise ne
+        print(f"The metric for problem {problem} with {use_dgl=} and {embed=} has not been implemented. I'll let it go anyways, but additional metrics won't be saved.")
+
 
 

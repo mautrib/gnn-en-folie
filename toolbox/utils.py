@@ -73,3 +73,11 @@ def clean_config(config):
 def get_lr(optimizer):
     for param_group in optimizer.param_groups:
         return param_group['lr']
+
+def symmetrize_matrix(A):
+    """
+    Symmetrizes a matrix :
+    If shape is (a,b,c) will symmetrize by considering a is batch size
+    """
+    Af = A.triu(0) + A.triu(1).transpose(-2,-1)
+    return Af

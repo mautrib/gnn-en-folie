@@ -1,15 +1,15 @@
 ---
 project: gnn
 device: gpu:1 #Can be 'cpu', 'gpu', 'tpu', 'ipu' (with an added ':#number of devices', default, 1 [ex: 'gpu:2]') or auto
-problem: mcp
-test_enabled: Yes
+problem: tsp
+test_enabled: No
 
 data:
     path_dataset: datasets # Path where datasets are stored, default data/
     train: # Train/Val data generation parameters
         num_examples_train: 10000
         num_examples_val: 1000
-        n_vertices: 100
+        n_vertices: 50100
         sparsify: None #Only works for not fgnns. Put to None if you don't want sparsifying, to an int if you do
         problems:
             tsp:
@@ -18,10 +18,18 @@ data:
             mcp:
                 edge_density: 0.5
                 clique_size: 15 #To not plant a clique, use 0
+            sbm:
+                p_inter : 0.9
+                p_outer : 0.1
+                alpha: 0.5
+            hhc:
+                generative_model: Gauss
+                cycle_param: 0
+                fill_param: 5 
             
     test: #Test data generation parameters
         num_examples_test: 1000
-        n_vertices: 200
+        n_vertices: 100
         sparsify: None
         problems:
             tsp:
@@ -30,6 +38,14 @@ data:
             mcp:
                 edge_density: 0.5
                 clique_size: 20 #To not plant a clique, use 0
+            sbm:
+                p_inter : 0.9
+                p_outer : 0.1
+                alpha: 0.5
+            hhc:
+                generative_model: Gauss
+                cycle_param: 0
+                fill_param: 5
 
 train: # Training parameters, you can add any Pytorch Lightning Trainer Arguments and pytorch DataLoader arguments
     max_epochs: 100
@@ -54,7 +70,7 @@ arch: # Architecture and model
             in_features: 64
             out_features: 1
             depth_of_mlp: 3
-            input_embed: Yes
+            input_embed: No #To remove for tsp and hhc
         gatedgcn:
             n_layers: 4
             in_dim: 1

@@ -4,12 +4,18 @@ from models import check_dgl_compatibility
 
 from data.tsp import TSP_Generator
 from data.mcp import MCP_Generator
+from data.sbm import SBM_Generator
+from data.hhc import HHC_Generator
 
 def get_generator_class(problem_key):
     if problem_key == 'tsp':
         Generator_Class = TSP_Generator
     elif problem_key == 'mcp':
         Generator_Class = MCP_Generator
+    elif problem_key == 'sbm':
+        Generator_Class = SBM_Generator
+    elif problem_key == 'hhc':
+        Generator_Class = HHC_Generator
     else:
         raise NotImplementedError(f"Generator for problem {problem_key} hasn't been implemented or define in data/__init__.py yet.")
     return Generator_Class
