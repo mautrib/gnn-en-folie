@@ -35,6 +35,7 @@ class FGNN_Edge(GNN_Abstract_Base_Class):
         raw_scores = x.squeeze(-1)
         loss_value = self.loss(raw_scores, target)
         self.log('train_loss', loss_value)
+        self.log_metric('train', raw_scores=raw_scores, target=target)
         return loss_value
     
     def validation_step(self, batch, batch_idx):
@@ -43,6 +44,7 @@ class FGNN_Edge(GNN_Abstract_Base_Class):
         raw_scores = x.squeeze(-1)
         loss_value = self.loss(raw_scores, target)
         self.log('val_loss', loss_value)
+        self.log_metric('val', raw_scores=raw_scores, target=target)
         return loss_value
 
     def configure_optimizers(self):

@@ -4,9 +4,9 @@ import os
 
 from models import get_pipeline
 from data import get_train_val_datasets
+from metrics import setup_metric
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
-from torch.utils.data import DataLoader
 
 def get_config(filename='default_config.yaml'):
     with open(filename, 'r') as f:
@@ -41,6 +41,7 @@ def setup_trainer(config, model):
 
 def train(config):
     pl_model = get_pipeline(config)
+    setup_metric(pl_model, config)
     trainer = setup_trainer(config, pl_model)
     train_dataset, val_dataset = get_train_val_datasets(config)
     trainer.fit(pl_model, train_dataset, val_dataset)

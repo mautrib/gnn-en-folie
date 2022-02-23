@@ -1,6 +1,6 @@
 import pytorch_lightning as pl
 import torch.optim
-from toolbox.utils import get_lr
+from toolbox.utils import get_lr, restrict_dict_to_function
 
 class GNN_Abstract_Base_Class(pl.LightningModule):
 
@@ -14,6 +14,9 @@ class GNN_Abstract_Base_Class(pl.LightningModule):
         }
         self.scheduler_monitor = optim_args['monitor']
 
+        self.use_metric = False
+        self._metric_function = None
+
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.initial_lr)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, verbose=True, **(self.scheduler_args))
@@ -23,3 +26,13 @@ class GNN_Abstract_Base_Class(pl.LightningModule):
         optim = self.optimizers()
         lr = get_lr(optim)
         self.log('lr',lr)
+    
+    def attach_metric_function(self, metric_function, start_using_metric=True):
+        if start_using_metric: self.use_metric = True
+        self._metric_function = metric_function
+    
+    def log_metric(self, prefix, **kwargs):
+        if self.use_metric and self._metric_function is not None:
+            arg_dict = restrict_dict_to_function(self._metric_function, kwargs)
+            value_dict = self._metric_function(**arg_dict)
+            self.log(f'{prefix}.metrics', value_dict)
