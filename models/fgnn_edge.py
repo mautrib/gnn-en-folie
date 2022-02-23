@@ -46,6 +46,15 @@ class FGNN_Edge(GNN_Abstract_Base_Class):
         self.log('val_loss', loss_value)
         self.log_metric('val', raw_scores=raw_scores, target=target)
         return loss_value
+    
+    def test_step(self, batch, batch_idx):
+        g, target = batch
+        x = self(g)
+        raw_scores = x.squeeze(-1)
+        loss_value = self.loss(raw_scores, target)
+        self.log('test_loss', loss_value)
+        self.log_metric('test', raw_scores=raw_scores, target=target)
+        return loss_value
 
     def configure_optimizers(self):
             optimizer = torch.optim.Adam(self.parameters(), lr=1e-4)

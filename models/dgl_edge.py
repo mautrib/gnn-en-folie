@@ -36,3 +36,10 @@ class DGL_Edge(GNN_Abstract_Base_Class):
         loss_value = self.loss(x, target)
         self.log('val_loss', loss_value)
         return loss_value
+    
+    def test_step(self, batch, batch_idx):
+        g, target = batch
+        x = self(g)
+        loss_value = self.loss(x, target)
+        self.log('test_loss', loss_value)
+        return loss_value

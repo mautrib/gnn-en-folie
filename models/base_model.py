@@ -22,10 +22,14 @@ class GNN_Abstract_Base_Class(pl.LightningModule):
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, verbose=True, **(self.scheduler_args))
         return {'optimizer':optimizer, 'lr_scheduler': scheduler, 'monitor': self.scheduler_monitor}
     
-    def on_epoch_start(self) -> None:
+    def _log_lr(self)->None:
         optim = self.optimizers()
-        lr = get_lr(optim)
-        self.log('lr',lr)
+        if optim:
+            lr = get_lr(optim)
+            self.log('lr',lr)
+
+    def on_epoch_start(self) -> None:
+        self._log_lr()
     
     def attach_metric_function(self, metric_function, start_using_metric=True):
         if start_using_metric: self.use_metric = True

@@ -1,13 +1,15 @@
+from json import load
 import yaml
 import toolbox.utils as utils
 import os
 
 from models import get_pipeline, get_pl_model, get_torch_model, get_optim_args
-from data import get_train_val_datasets
+from data import get_test_dataset, get_train_val_datasets
 from metrics import setup_metric
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import EarlyStopping
+import argparse
 
 def get_config(filename='default_config.yaml'):
     with open(filename, 'r') as f:
@@ -33,7 +35,6 @@ def load_model(config):
     pl_model = PL_Model_Class.load_from_checkpoint(path, model=get_torch_model(config), optim_args=get_optim_args(config))
     print('Done.')
     return pl_model
-
 
 def get_trainer_config(config):
     trainer_config = config['train']
@@ -62,11 +63,41 @@ def train(config):
     trainer = setup_trainer(config, pl_model)
     train_dataset, val_dataset = get_train_val_datasets(config)
     trainer.fit(pl_model, train_dataset, val_dataset)
+    return trainer
+
+def test(trainer, config):
+    test_dataset = get_test_dataset(config)
+    arg_dict = {'dataloaders': test_dataset,
+                'verbose':True
+    }
+    if trainer is None:
+        pl_model = load_model(config)
+        trainer = pl.Trainer()
+        arg_dict['model'] = pl_model
+    else:
+        arg_dict['ckpt_path'] = 'best'
+    trainer.test(**arg_dict)
+
 
 def main():
+    parser = argparse.ArgumentParser(description='Main file for creating experiments.')
+    parser.add_argument('command', metavar='c', choices=['train','test'],
+                    help='Command to execute : train or test')
+    args = parser.parse_args()
+    if args.command=='train':
+        training=True
+        default_test = False
+    elif args.command=='test':
+        training=False
+        default_test=True
+    
     config = get_config()
     config = utils.clean_config(config)
-    train(config)
+    trainer=None
+    if training:
+        trainer = train(config)
+    if default_test or config['test_enabled']:
+        test(trainer, config)
 
 if __name__=="__main__":
     main()
