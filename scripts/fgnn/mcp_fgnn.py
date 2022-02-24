@@ -10,7 +10,7 @@ import wandb
 seed_everything(5344)
 
 ERASE_DATASETS=True
-base_path = 'scripts'
+base_path = 'scripts/fgnn'
 planner_file = 'planner_files/mcp.csv'
 config_file = 'mcp_fgnn.yaml'
 config_path = os.path.join(base_path, config_file)

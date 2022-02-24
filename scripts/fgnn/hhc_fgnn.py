@@ -14,7 +14,7 @@ PROBLEM='hhc'
 VALUE_NAME = 'fill_param'
 
 ERASE_DATASETS=True
-base_path = 'scripts'
+base_path = 'scripts/fgnn'
 planner_file = f'planner_files/{PROBLEM}.csv'
 config_file = f'{PROBLEM}_fgnn.yaml'
 config_path = os.path.join(base_path, config_file)
