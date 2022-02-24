@@ -1,7 +1,7 @@
 from copy import deepcopy
 import sys, os
 sys.path.append(os.getcwd())
-from data import get_test_dataset, get_train_val_datasets
+from data import get_test_generator, get_train_val_generators
 from toolbox.planner import Task, Planner
 from commander import get_config, train, test
 from pytorch_lightning import seed_everything
@@ -24,8 +24,8 @@ planner = Planner(planner_path)
 planner.add_tasks(tasks)
 
 def erase_datasets(config):
-    train_ds, val_ds = get_train_val_datasets(config)
-    test_ds = get_test_dataset(config)
+    train_ds, val_ds = get_train_val_generators(config)
+    test_ds = get_test_generator(config)
     train_ds.remove_files()
     val_ds.remove_files()
     test_ds.remove_files()

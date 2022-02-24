@@ -42,9 +42,8 @@ def dgl_to_pytorch(generator, batch_size=32, shuffle=False, num_workers=4, **kwa
     pytorch_loader = DataLoader(generator, batch_size=batch_size,shuffle=shuffle, num_workers=num_workers, collate_fn=_collate_fn_dgl)
     return pytorch_loader
 
-def get_dataset(config:dict, type:str, dgl_check=True,dataloader_args={}):
+def get_generator(config:dict, type:str):
     problem_key = config['problem'].lower()
-
     Generator_Class = get_generator_class(problem_key)
     
     lookup_key = TRAIN_VAL_TEST_LOOKUP[type]
@@ -54,6 +53,11 @@ def get_dataset(config:dict, type:str, dgl_check=True,dataloader_args={}):
     problem_specific_config = config['data'][lookup_key]['problems'][problem_key]
 
     dataset = Generator_Class(type, {**data_config, **problem_specific_config})
+    return dataset
+
+def get_dataset(config:dict, type:str, dgl_check=True,dataloader_args={}):
+
+    dataset = get_generator(config, type)
 
     use_dgl = config['arch']['use_dgl']
     arch_name = config['arch']['name'].lower()
@@ -68,6 +72,15 @@ def get_dataset(config:dict, type:str, dgl_check=True,dataloader_args={}):
         dataloaded = tensor_to_pytorch(dataset,**loader_config, **dataloader_args)
 
     return dataloaded
+
+def get_train_val_generators(config:dict):
+    train_gen = get_generator(config, 'train')
+    val_gen = get_generator(config, 'val')
+    return train_gen, val_gen
+
+def get_test_generator(config:dict):
+    test_gen = get_generator(config, 'test')
+    return test_gen
 
 def get_train_val_datasets(config:dict, dgl_check=True):
     train_dataset = get_dataset(config, 'train', dgl_check=dgl_check, dataloader_args={'shuffle':True})
