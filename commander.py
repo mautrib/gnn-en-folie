@@ -40,7 +40,7 @@ def get_trainer_config(config):
     trainer_config = config['train']
     accelerator_config = utils.get_accelerator_dict(config['device'])
     trainer_config.update(accelerator_config)
-    early_stopping = EarlyStopping('lr', verbose=True,patience=1+config['train']['max_epochs'], divergence_threshold=config['train']['optim_args']['lr_stop'])
+    early_stopping = EarlyStopping('lr', verbose=True, mode='max', patience=1+config['train']['max_epochs'], divergence_threshold=config['train']['optim_args']['lr_stop'])
     trainer_config['callbacks'] = [early_stopping]
     clean_config = utils.restrict_dict_to_function(pl.Trainer.__init__, trainer_config)
     return clean_config

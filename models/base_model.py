@@ -8,6 +8,7 @@ class GNN_Abstract_Base_Class(pl.LightningModule):
         super().__init__()
         self.model = model
         self.initial_lr = optim_args['lr']
+        self.log('lr', self.initial_lr)
         self.scheduler_args = {
             'patience': optim_args['scheduler_step'],
             'factor': optim_args['scheduler_factor']
