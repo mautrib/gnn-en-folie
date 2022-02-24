@@ -1,7 +1,7 @@
 from copy import deepcopy
 import sys, os
-from data import get_test_dataset, get_train_val_datasets
 sys.path.append(os.getcwd())
+from data import get_test_dataset, get_train_val_datasets
 from toolbox.planner import Task, Planner
 from commander import get_config, train, test
 from pytorch_lightning import seed_everything
