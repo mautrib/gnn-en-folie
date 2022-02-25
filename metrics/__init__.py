@@ -22,7 +22,8 @@ def get_fgnn_node_metric(problem):
 def get_dgl_edge_metric(problem):
     if problem=='tsp':
         return tsp_dgl_edge_compute_f1
-    raise NotImplementedError(f"Metric for dgl edge problem {problem} has not been implemented.")
+    else:
+        raise NotImplementedError(f"Metric for dgl edge problem {problem} has not been implemented.")
 
 def get_dgl_node_metric(problem):
     raise NotImplementedError()
@@ -44,7 +45,7 @@ def setup_metric(pl_model: GNN_Abstract_Base_Class, config: dict, soft=True)-> N
     except NotImplementedError as ne:
         if not soft:
             raise ne
-        print(f"The metric for problem {problem} with {use_dgl=} and {embed=} has not been implemented. I'll let it go anyways, but additional metrics won't be saved.")
+        print(f"The metric for {problem=} with {use_dgl=} and {embed=} has not been implemented. I'll let it go anyways, but additional metrics won't be saved.")
 
 
 
