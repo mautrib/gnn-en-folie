@@ -1,4 +1,5 @@
 import torch
+from toolbox.conversions import dgl_dense_adjacency, edge_format_to_dense_tensor
 
 def f1_score(preds,labels):
     """
@@ -35,4 +36,37 @@ def tsp_fgnn_edge_compute_f1(raw_scores,target,k_best=3):
     y_onehot = y_onehot.type_as(raw_scores)
     y_onehot.scatter_(2, ind, 1)
     prec, rec, f1 =  f1_score(y_onehot,target)
+    return {'precision': prec, 'recall': rec, 'f1': f1}
+
+def tsp_dgl_edge_compute_f1(raw_scores, target, k_best=3):
+    """
+    Computes F1-score with the k_best best edges per row
+    For TSP with the chosen 3 best, the best result will be : prec=2/3, rec=1, f1=0.8 (only 2 edges are valid)
+     - raw_scores : shape (N_edges, 2)
+     - target     : graph with graph.edata['solution'] of shape (N_edges, 1)
+    """
+    assert raw_scores.shape[1]==2, f"Scores given by model are not given with two classes but with {raw_scores.shape[1]}"
+    data = target
+    target = target.edata['solution'].squeeze(-1).type_as(raw_scores)
+    dense_target = edge_format_to_dense_tensor(target, data)
+    proba = torch.softmax(raw_scores,dim=-1)
+    proba_of_being_1 = proba[:,1]
+    dense_proba_of_1 = edge_format_to_dense_tensor(proba_of_being_1, data)
+    N,_ = dense_target.shape
+    mask = (dgl_dense_adjacency(data)*(1-torch.eye(N))).type_as(raw_scores)
+
+    _, ind = torch.topk(dense_proba_of_1, k=k_best, dim = 1) #Here chooses the 3 best choices
+    y_onehot = torch.zeros_like(dense_target)
+    y_onehot = y_onehot.type_as(dense_target)
+    y_onehot.scatter_(1, ind, 1)
+
+    true_pos = torch.sum(mask*y_onehot*dense_target).cpu().item()
+    false_pos= torch.sum(mask*y_onehot*(1-dense_target)).cpu().item()
+
+    prec = true_pos/(true_pos+false_pos)
+    rec = true_pos/(torch.sum(dense_target).cpu().item())
+    if prec+rec == 0:
+        f1 = 0.0
+    else:
+        f1 = 2*prec*rec/(prec+rec)
     return {'precision': prec, 'recall': rec, 'f1': f1}

@@ -1,6 +1,4 @@
 import torch
-import os
-import tqdm
 import dgl
 from numpy import mgrid as npmgrid, argpartition as npargpartition
 from toolbox.utils import is_adj
@@ -34,6 +32,20 @@ def dense_tensor_to_edge_format(dense_tensor: torch.Tensor, dgl_graph: dgl.graph
     edge_tensor = dense_tensor[src,rst]
     return edge_tensor.unsqueeze(-1)
 
+def edge_format_to_dense_tensor(edge_features: torch.Tensor, graph: dgl.graph):
+    N = graph.num_nodes()
+    if edge_features.dim()==1:
+        N_edges = len(edge_features)
+        dense_tensor = torch.zeros((N,N))
+    else:
+        N_edges, N_feats = edge_features.shape
+        dense_tensor = torch.zeros((N,N,N_feats))
+    dense_tensor = dense_tensor.type_as(edge_features)
+    src, dst = graph.edges()
+    assert len(src)==N_edges, f'edge_features tensor does not correspond to this graph (not the same number of edges: {len(src)} and {N_edges})'
+    dense_tensor[src,dst] = edge_features
+    return dense_tensor
+
 def connectivity_to_dgl(connectivity_graph, sparsify=None, distances = None):
     assert connectivity_graph.dim()==3, "Tensor dimension not recognized. Should be (N_nodes, N_nodes, N_features)"
     N, _, N_feats = connectivity_graph.shape
@@ -65,3 +77,10 @@ def adjacency_matrix_to_tensor_representation(W):
     indices = torch.arange(len(W))
     B[indices, indices, 0] = degrees
     return B
+
+def dgl_dense_adjacency(graph: dgl.graph):
+    N = graph.num_nodes()
+    dense_adj = torch.zeros((N,N))
+    src, dst = graph.edges()
+    dense_adj[src,dst] = 1
+    return dense_adj

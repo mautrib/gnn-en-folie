@@ -25,21 +25,24 @@ class DGL_Edge(GNN_Abstract_Base_Class):
     
     def training_step(self, batch, batch_idx):
         g, target = batch
-        x = self(g)
-        loss_value = self.loss(x, target)
+        raw_scores = self(g)
+        loss_value = self.loss(raw_scores, target)
         self.log('train_loss', loss_value)
+        self.log_metric('train',raw_scores=raw_scores, target=target)
         return loss_value
     
     def validation_step(self, batch, batch_idx):
         g, target = batch
-        x = self(g)
-        loss_value = self.loss(x, target)
+        raw_scores = self(g)
+        loss_value = self.loss(raw_scores, target)
         self.log('val_loss', loss_value)
+        self.log_metric('train', raw_scores=raw_scores, target=target)
         return loss_value
     
     def test_step(self, batch, batch_idx):
         g, target = batch
-        x = self(g)
-        loss_value = self.loss(x, target)
+        raw_scores = self(g)
+        loss_value = self.loss(raw_scores, target)
         self.log('test_loss', loss_value)
+        self.log_metric('train', data=g, raw_scores=raw_scores, target=target)
         return loss_value
