@@ -1,13 +1,13 @@
 import os
 import torch
 import dgl
-from data.base import Base_Generator, connectivity_to_dgl, dense_tensor_to_edge_format
+from data.base import Base_Generator
 from toolbox import utils
+from toolbox.conversions import dense_tensor_to_edge_format
 import math
 import random
 import networkx
 from numpy.random import default_rng
-import tqdm
 
 
 try:

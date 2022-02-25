@@ -1,9 +1,10 @@
-from data.base import Base_Generator, dense_tensor_to_edge_format
+from data.base import Base_Generator
 from toolbox import utils
 import os
 import torch
 from numpy.random import default_rng
 import dgl
+from toolbox.conversions import dense_tensor_to_edge_format
 
 rng = default_rng(41)
 

@@ -1,8 +1,9 @@
-from data.base import Base_Generator, adjacency_matrix_to_tensor_representation, dense_tensor_to_edge_format
+from data.base import Base_Generator
 from toolbox import utils
 import torch
 import os
 import dgl
+from toolbox.conversions import adjacency_matrix_to_tensor_representation, dense_tensor_to_edge_format
 
 class SBM_Generator(Base_Generator):
     def __init__(self, name, args):

@@ -1,5 +1,6 @@
-from data.base import Base_Generator, adjacency_matrix_to_tensor_representation, dense_tensor_to_edge_format
+from data.base import Base_Generator
 from data.graph_generation import GENERATOR_FUNCTIONS
+from toolbox.conversions import adjacency_matrix_to_tensor_representation
 from toolbox.searches.mcp import mcp_beam_method
 import torch
 import os
