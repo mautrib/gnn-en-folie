@@ -25,7 +25,7 @@ def f1_score(preds,labels):
         f1 = 2*prec*rec/(prec+rec)
     return prec, rec, f1#, n, bs
 
-def tsp_compute_f1(raw_scores,target,k_best=3):
+def tsp_fgnn_edge_compute_f1(raw_scores,target,k_best=3):
     """
     Computes F1-score with the k_best best edges per row
     For TSP with the chosen 3 best, the best result will be : prec=2/3, rec=1, f1=0.8 (only 2 edges are valid)

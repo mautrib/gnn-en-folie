@@ -1,6 +1,6 @@
 import torch
 
-def mcp_compute_accuracy(raw_scores,target):
+def mcp_fgnn_compute_accuracy(raw_scores,target):
     """
     weights and target should be (bs,n,n)
     """

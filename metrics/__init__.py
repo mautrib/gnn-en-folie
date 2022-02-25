@@ -1,12 +1,18 @@
-from metrics.mcp import mcp_compute_accuracy
-from metrics.tsp import tsp_compute_f1
+from metrics.hhc import hhc_fgnn_edge_compute_accuracy
+from metrics.mcp import mcp_fgnn_compute_accuracy
+from metrics.sbm import sbm_fgnn_edge_compute_accuracy
+from metrics.tsp import tsp_fgnn_edge_compute_f1
 from models.base_model import GNN_Abstract_Base_Class 
 
 def get_fgnn_edge_metric(problem):
     if problem=='tsp':
-        return tsp_compute_f1
+        return tsp_fgnn_edge_compute_f1
     elif problem=='mcp':
-        return mcp_compute_accuracy
+        return mcp_fgnn_compute_accuracy
+    elif problem=='sbm':
+        return sbm_fgnn_edge_compute_accuracy
+    elif problem=='hhc':
+        return hhc_fgnn_edge_compute_accuracy
     else:
         raise NotImplementedError(f"Metric for problem {problem} has not been implemented.")
 
