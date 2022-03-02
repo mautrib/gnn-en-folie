@@ -235,3 +235,10 @@ def torch_flatten(inp, start_dim=0, end_dim=-1):
     res_tensor = torch.flatten(inp.tensor.rename(None), start_dim=start_dim, end_dim=end_dim)
     res_tensor = res_tensor.refine_names(*new_names)
     return MaskedTensor(res_tensor, inp.mask_dict, adjust_mask=True, apply_mask=False)
+
+if __name__=='__main__':
+    tensor_list = []
+    tensor_list.append(torch.randn((50,50,2)))
+    tensor_list.append(torch.randn((20,20,4)))
+    tensor_list.append(torch.randn((30,30,1)))
+    mt = from_list(tensor_list, (0,1,2))

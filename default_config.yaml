@@ -1,23 +1,29 @@
 ---
 project: gnn
 device: gpu:1 #Can be 'cpu', 'gpu', 'tpu', 'ipu' (with an added ':#number of devices', default, 1 [ex: 'gpu:2]') or auto
-problem: tsp
-test_enabled: No
+problem: tsp_mt
+test_enabled: Yes
 
 data:
+    use_maskedtensor: Yes
     path_dataset: datasets # Path where datasets are stored, default data/
     train: # Train/Val data generation parameters
         num_examples_train: 10000
         num_examples_val: 1000
-        n_vertices: 50100
+        n_vertices: 50
+        min_vertices: 50
+        max_vertices: 100
         sparsify: None #Only works for not fgnns. Put to None if you don't want sparsifying, to an int if you do
         problems:
             tsp:
                 distance_used: EUC_2D
                 generative_model: Square01
+            tsp_mt:
+                distance_used: EUC_2D
+                generative_model: Square01
             mcp:
                 edge_density: 0.5
-                clique_size: 15 #To not plant a clique, use 0
+                clique_size: 20 #To not plant a clique, use 0
             sbm:
                 p_inter : 0.9
                 p_outer : 0.1
@@ -29,10 +35,15 @@ data:
             
     test: #Test data generation parameters
         num_examples_test: 1000
-        n_vertices: 100
+        n_vertices: 50
+        min_vertices: 50
+        max_vertices: 100
         sparsify: None
         problems:
             tsp:
+                distance_used: EUC_2D
+                generative_model: Square01
+            tsp_mt:
                 distance_used: EUC_2D
                 generative_model: Square01
             mcp:
@@ -51,8 +62,8 @@ train: # Training parameters, you can add any Pytorch Lightning Trainer Argument
     max_epochs: 100
     batch_size:  64
     optim_args:
-        lr: !!float 1e-4
-        scheduler_step: 1
+        lr: !!float 1e-5
+        scheduler_step: 3
         scheduler_factor: 0.5
         lr_stop: !!float 1e-7
         monitor: val_loss #Value to monitor for the scheduler (For now, only val_loss)
@@ -72,10 +83,10 @@ arch: # Architecture and model
             depth_of_mlp: 3
             input_embed: No #To remove for tsp and hhc
         gatedgcn:
-            n_layers: 4
+            n_layers: 12
             in_dim: 1
             in_dim_edge: 1
-            hidden_dim: 20
+            hidden_dim: 64
             n_classes: 2
 
 observers:
