@@ -55,7 +55,6 @@ def mcp_dgl_edge_compute_f1(raw_scores, target, threshold=0.5):
         f1 = 2*prec*rec/(prec+rec)
     return {'precision': prec, 'recall': rec, 'f1': f1}
 
-
 def mcp_dgl_edge_compute_beamsearch_accuracy(raw_scores,target):
     """
      - raw_scores : shape (N_edges, 2)

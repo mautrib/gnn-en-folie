@@ -1,6 +1,6 @@
-from metrics.hhc import hhc_fgnn_edge_compute_accuracy
+from metrics.hhc import hhc_dgl_edge_compute_f1, hhc_fgnn_edge_compute_accuracy
 from metrics.mcp import mcp_dgl_edge_compute_f1, mcp_fgnn_edge_compute_accuracy
-from metrics.sbm import sbm_fgnn_edge_compute_accuracy
+from metrics.sbm import sbm_dgl_edge_compute_f1, sbm_fgnn_edge_compute_accuracy
 from metrics.tsp import tsp_fgnn_edge_compute_f1, tsp_dgl_edge_compute_f1
 from models.base_model import GNN_Abstract_Base_Class 
 
@@ -24,6 +24,10 @@ def get_dgl_edge_metric(problem):
         return tsp_dgl_edge_compute_f1
     elif problem=='mcp':
         return mcp_dgl_edge_compute_f1
+    elif problem=='hhc':
+        return hhc_dgl_edge_compute_f1
+    elif problem=='sbm':
+        return sbm_dgl_edge_compute_f1
     else:
         raise NotImplementedError(f"Metric for dgl edge problem {problem} has not been implemented.")
 

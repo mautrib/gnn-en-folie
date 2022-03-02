@@ -14,3 +14,28 @@ def hhc_fgnn_edge_compute_accuracy(raw_scores, target):
     n_total = bs * n #Perfect would be that we have the right permutation for every bs 
     acc = true_pos/n_total
     return {'accuracy': acc}
+
+def hhc_dgl_edge_compute_f1(raw_scores, target):
+    """
+     - raw_scores : shape (N_edges, 2)
+     - target : dgl graph with target.edata['solution'] of shape (N_edges,1)
+    """
+    assert raw_scores.shape[1]==2, f"Scores given by model are not given with two classes but with {raw_scores.shape[1]}"
+    solution = target.edata['solution'].squeeze()
+    n_solution_edges = torch.sum(solution)
+    scores_of_being_1 = raw_scores[:,1]
+    
+    _, ind = torch.topk(scores_of_being_1, k=n_solution_edges) #Here chooses the 3 best choices
+    y_onehot = torch.zeros_like(solution)
+    y_onehot = y_onehot.type_as(solution)
+    y_onehot.scatter_(0, ind, 1)
+
+    true_pos = torch.sum(y_onehot*solution)
+    false_pos = torch.sum(y_onehot*(1-solution))
+    prec = true_pos/(true_pos+false_pos)
+    rec = true_pos/n_solution_edges
+    if prec+rec == 0:
+        f1 = 0.0
+    else:
+        f1 = 2*prec*rec/(prec+rec)
+    return {'precision': prec, 'recall': rec, 'f1': f1}
