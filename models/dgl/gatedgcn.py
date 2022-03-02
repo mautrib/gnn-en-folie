@@ -160,7 +160,7 @@ class GatedGCNNet_Edge(nn.Module):
             if 'feat' in g.edata:
                 e = g.edata['feat']
             else:
-                e = torch.ones((g.number_of_edges(),1))
+                e = torch.ones((g.number_of_edges(),1)).type_as(h)
         e = self.embedding_e(e.float())
         
         # convnets
