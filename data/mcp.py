@@ -68,6 +68,7 @@ class MCP_Generator(Base_Generator):
             B,K = self._get_max_clique(g)
         else:
             B,K = self._plant_clique(W)
+        K = K.to(int)
         return (B,K)
     
     @classmethod

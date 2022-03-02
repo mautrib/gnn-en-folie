@@ -17,7 +17,7 @@ def insert(container, new_item, key=len):
             r = mid
     return container[:l] + [new_item] + container[l:]
 
-def mcp_beam_method(adjs, raw_scores, seeds=None, add_singles=True, beam_size=1280):
+def mcp_beam_method(adjs, raw_scores, seeds=None, add_singles=True, beam_size=1280, normalize=True):
     """
     The idea of this method is to establish a growing clique, keeping only the biggest cliques starting from the most probable nodes
     seeds should be a list of sets
@@ -31,10 +31,12 @@ def mcp_beam_method(adjs, raw_scores, seeds=None, add_singles=True, beam_size=12
         adjs = adjs.unsqueeze(0)
         if seeding: seeds = [seeds] #In that case we'd only have a set
     
-
     bs,n,_ = raw_scores.shape
 
-    probas = torch.sigmoid(raw_scores)
+    if normalize:
+        probas = torch.sigmoid(raw_scores)
+    else:
+        probas = raw_scores
 
     degrees = torch.sum(probas, dim=-1)
     inds_order = torch.argsort(degrees,dim=-1,descending=True) #Sort them in ascending order
