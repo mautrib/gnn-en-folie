@@ -85,7 +85,7 @@ class HHC_Generator(Base_Generator):
                              .format(self.generative_model))
         
         W = torch.tensor(W,dtype=torch.float)
-        SOL = torch.eye(self.n_vertices).roll(1,dims=-1)
+        SOL = torch.eye(self.n_vertices, dtype=int).roll(1,dims=-1)
         SOL = (SOL+SOL.T)
         #W,SOL = utils.permute_adjacency_twin(W,SOL)
         

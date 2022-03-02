@@ -1,11 +1,7 @@
 import torch
 import os
 import tqdm
-
 from toolbox.conversions import connectivity_to_dgl
-
-
-
 
 class Base_Generator(torch.utils.data.Dataset):
     def __init__(self, name, path_dataset, num_examples):

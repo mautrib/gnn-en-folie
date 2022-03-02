@@ -54,7 +54,7 @@ class SBM_Generator(Base_Generator):
         adj[n_sub_a:,n_sub_a:] = gb.detach().clone()
 
 
-        K = torch.zeros((n,n))
+        K = torch.zeros((n,n), dtype=int)
         K[:n_sub_a,:n_sub_a] = 1
         K[n_sub_a:,n_sub_a:] = 1
         #K,adj = utils.permute_adjacency_twin(K,adj)
