@@ -55,8 +55,3 @@ class FGNN_Edge(GNN_Abstract_Base_Class):
         self.log('test_loss', loss_value)
         self.log_metric('test', raw_scores=raw_scores, target=target)
         return loss_value
-
-    def configure_optimizers(self):
-            optimizer = torch.optim.Adam(self.parameters(), lr=1e-4)
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5,patience=3, verbose=True)
-            return {'optimizer':optimizer, 'lr_scheduler': scheduler, 'monitor':'val_loss'}
