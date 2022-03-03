@@ -2,6 +2,7 @@
 Masked tensors to handle batches with mixed node numbers
 """
 
+import enum
 import itertools
 import functools
 import torch
@@ -111,6 +112,7 @@ class MaskedTensor:
 
     ## Iterator methods
     def __getitem__(self, index):
+        """ Doesn't work with batch slices"""
         item = self.tensor[index]
         names = item.names
         for dim, name in enumerate(names):
@@ -118,6 +120,38 @@ class MaskedTensor:
                 length = int(torch.sum(self.mask_dict[name][index]).item())
                 item = torch.narrow(item, dim, 0, length)
         return item.rename(None)
+
+    def __getitem_mt__(self, index):
+        new_tensor = self.tensor[index]
+
+        if isinstance(index, int) or isinstance(index,slice):
+            index = [index]
+        index_mask_dict = {}
+        dims_to_squeeze = [] #Keeping track of which dimension should be removed at the end
+        for i, name in enumerate(self.tensor.names):
+            current_slice = slice(None)
+            if i<len(index):
+                slice_value = index[i]
+                if (slice_value,int):
+                    current_slice = slice(slice_value, slice_value+1)
+                    dims_to_squeeze.append(name)
+                elif isinstance(slice_value, slice):
+                    current_slice = slice_value
+                else:
+                    raise NotImplementedError(f"Don't know what to do for slices like this : {slice_value}")
+            index_mask_dict[name] = current_slice
+        
+        new_mask_dict = {}
+        for name, mask in self.mask_dict.items():
+            mask_names = mask.names
+            built_index = [index_mask_dict.get(mask_name,slice(None)) for mask_name in mask_names]
+            if built_index:
+                new_mask = mask[built_index]
+                for dim_to_squeeze in dims_to_squeeze:
+                    if dim_to_squeeze in new_mask.names:
+                        new_mask = new_mask.squeeze(dim_to_squeeze)
+                new_mask_dict[name] = new_mask
+        return MaskedTensor(new_tensor, new_mask_dict, adjust_mask=False, apply_mask=False)
 
     def __len__(self):
         return self.tensor.size(self._batch_name)
@@ -152,11 +186,30 @@ class MaskedTensor:
         new_dict = {name:mask.to(*args, **kwargs) for name, mask in self.mask_dict.items()}
         new_tensor = self.tensor.to(*args, **kwargs)
         return MaskedTensor(new_tensor, new_dict, adjust_mask=False, apply_mask=False)
+
+    def type_as(self, tens):
+        """Apply type_as to tensor and mask"""
+        if isinstance(tens, MaskedTensor):
+            tens = tens.tensor
+        new_dict = {name:mask.type_as(tens) for name, mask in self.mask_dict.items()}
+        names = self.tensor.names
+        nameless_tensor = self.tensor.rename(None)
+        new_nameless_tensor = nameless_tensor.type_as(tens)
+        new_tensor = new_nameless_tensor.rename(*names)
+        return MaskedTensor(new_tensor, new_dict, adjust_mask=False, apply_mask=False)
     
     def squeeze(self, dim=None):
         """ Squeeze the tensor """
         squeezed = torch.squeeze(self, dim=dim)
         return squeezed
+    
+    def scatter_(self, *args, **kwargs):
+        """ Scatter_ method """
+        names = self.tensor.names
+        nameless_tensor = self.tensor.rename(None)
+        nameless_res_tensor = torch.scatter(nameless_tensor, *args, **kwargs)
+        res_tensor = nameless_res_tensor.rename(*names)
+        return MaskedTensor(res_tensor, self.mask_dict, adjust_mask=False, apply_mask=True)
 
 ### Torch function overrides
 SPECIAL_FUNCTIONS = {}
@@ -275,9 +328,15 @@ def torch_binary_cross_entropy(inp, target, *args, **kwargs):
         return MaskedTensor(res_tensor, inp.mask_dict, adjust_mask=False, apply_mask=True)
     return nameless_res_tensor
 
+@implements(torch.topk)
+def torch_topk(inp, *args,**kwargs):
+    nameless_tensor = inp.tensor.rename(None)
+    return torch.topk(nameless_tensor,*args, **kwargs)
+
 if __name__=='__main__':
     tensor_list = []
     tensor_list.append(torch.randn((50,50,2)))
     tensor_list.append(torch.randn((20,20,4)))
     tensor_list.append(torch.randn((30,30,1)))
     mt = from_list(tensor_list, (0,1,2))
+    mt[0]

@@ -70,3 +70,37 @@ def tsp_dgl_edge_compute_f1(raw_scores, target, k_best=3):
     else:
         f1 = 2*prec*rec/(prec+rec)
     return {'precision': prec, 'recall': rec, 'f1': f1}
+
+def tsp_mt_edge_compute_f1(raw_scores, target, k_best=3):
+    """
+    Computes F1-score with the k_best best edges per row
+    For TSP with the chosen 3 best, the best result will be : prec=2/3, rec=1, f1=0.8 (only 2 edges are valid)
+    """
+    bs = len(raw_scores)
+    raw_score_tensors = [raw_scores[i] for i in range(bs)]
+    target_tensors = [target[i] for i in range(bs)]
+
+    
+    true_pos = 0
+    false_pos = 0
+    for raw_score, preds in zip(raw_score_tensors,target_tensors):
+        _, ind = torch.topk(raw_score, k_best, dim = 1) #Here chooses the 3 best choices
+        y_onehot = torch.zeros_like(raw_score)
+        y_onehot = y_onehot.type_as(raw_score)
+        y_onehot.scatter_(1, ind, 1)
+
+        n_nodes ,_  = raw_score.shape 
+        mask = torch.ones((n_nodes,n_nodes))-torch.eye(n_nodes)
+        mask = mask.type_as(raw_score)
+
+        true_pos+= torch.sum(mask*y_onehot*preds).cpu().item()
+        false_pos += torch.sum(mask*y_onehot*(1-preds)).cpu().item()
+
+    prec = true_pos/(true_pos+false_pos)
+    rec = true_pos/(2*n_nodes*bs)
+    if prec+rec == 0:
+        f1 = 0.0
+    else:
+        f1 = 2*prec*rec/(prec+rec)
+
+    return {'precision': prec, 'recall': rec, 'f1': f1}
