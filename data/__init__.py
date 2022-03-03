@@ -62,7 +62,7 @@ def _collate_fn_mt(samples_list):
     return (input_mt,target_mt)
 
 def maskedtensor_to_pytorch(generator, batch_size=32, shuffle=False, num_workers=4, **kwargs):
-    pytorch_loader = DataLoader(generator, batch_size=batch_size,shuffle=shuffle, num_workers=num_workers, collate_fn=_collate_fn_mt())
+    pytorch_loader = DataLoader(generator, batch_size=batch_size,shuffle=shuffle, num_workers=num_workers, collate_fn=_collate_fn_mt)
     return pytorch_loader
 
 def _collate_fn_dgl(samples_list):
