@@ -96,7 +96,7 @@ def tsp_mt_edge_compute_f1(raw_scores, target, k_best=3):
 
         true_pos+= torch.sum(mask*y_onehot*labels).cpu().item()
         false_pos += torch.sum(mask*y_onehot*(1-labels)).cpu().item()
-        total_edges += torch.sum(labels)
+        total_true_edges += torch.sum(labels)
 
     prec = true_pos/(true_pos+false_pos)
     rec = true_pos/(total_true_edges)
