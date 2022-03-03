@@ -54,15 +54,15 @@ def tensor_to_pytorch(generator, batch_size=32, shuffle=False, num_workers=4, **
     return pytorch_loader
 
 def _collate_fn_mt(samples_list):
-    """We assume that we got a list of tensors of dimension 3 with dims 1 and 2 equal : shape=(n_vertices,n_vertices,n_features)"""
+    """We assume that we got a list of tensors of dimension 3 with dims 1 and 2 equal, and that all tensors have the same n_features : shape=(n_vertices,n_vertices,n_features)"""
     input1_list = [input1 for (input1, _) in samples_list]
     target_list = [target for (_,target) in samples_list]
-    input_mt = maskedtensor.from_list(input1_list,dims=(0,1,2))
-    target_mt = maskedtensor.from_list(target_list,dims=(0,1,2))
+    input_mt = maskedtensor.from_list(input1_list,dims=(0,1))
+    target_mt = maskedtensor.from_list(target_list,dims=(0,1))
     return (input_mt,target_mt)
 
-def maskedtensor_to_pytorch(generator, batch_size=32, shuffle=False, num_workers=4, **kwargs):
-    pytorch_loader = DataLoader(generator, batch_size=batch_size,shuffle=shuffle, num_workers=num_workers, collate_fn=_collate_fn_mt)
+def maskedtensor_to_pytorch(generator, batch_size=32, shuffle=False, **kwargs):
+    pytorch_loader = DataLoader(generator, batch_size=batch_size,shuffle=shuffle, num_workers=0, collate_fn=_collate_fn_mt)
     return pytorch_loader
 
 def _collate_fn_dgl(samples_list):
