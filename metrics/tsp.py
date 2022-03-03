@@ -83,7 +83,8 @@ def tsp_mt_edge_compute_f1(raw_scores, target, k_best=3):
     
     true_pos = 0
     false_pos = 0
-    for raw_score, preds in zip(raw_score_tensors,target_tensors):
+    total_true_edges = 0
+    for raw_score, labels in zip(raw_score_tensors,target_tensors):
         _, ind = torch.topk(raw_score, k_best, dim = 1) #Here chooses the 3 best choices
         y_onehot = torch.zeros_like(raw_score)
         y_onehot = y_onehot.type_as(raw_score)
@@ -93,11 +94,12 @@ def tsp_mt_edge_compute_f1(raw_scores, target, k_best=3):
         mask = torch.ones((n_nodes,n_nodes))-torch.eye(n_nodes)
         mask = mask.type_as(raw_score)
 
-        true_pos+= torch.sum(mask*y_onehot*preds).cpu().item()
-        false_pos += torch.sum(mask*y_onehot*(1-preds)).cpu().item()
+        true_pos+= torch.sum(mask*y_onehot*labels).cpu().item()
+        false_pos += torch.sum(mask*y_onehot*(1-labels)).cpu().item()
+        total_edges += torch.sum(labels)
 
     prec = true_pos/(true_pos+false_pos)
-    rec = true_pos/(2*n_nodes*bs)
+    rec = true_pos/(total_true_edges)
     if prec+rec == 0:
         f1 = 0.0
     else:
