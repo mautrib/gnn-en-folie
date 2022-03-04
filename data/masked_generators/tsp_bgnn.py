@@ -63,8 +63,8 @@ class TSP_BGNN_Generator(torch.utils.data.Dataset):
             l_data,l_pos = self.get_data_from_file(use_dgl=use_dgl)
             print('Saving dataset at {}'.format(path))
             torch.save((l_data, self.positions), path)
-        self.data = list(data)
-        self.positions = list(pos)
+        self.data = list(l_data)
+        self.positions = list(l_pos)
 
     def get_data_from_file(self, use_dgl=False):
         if not os.path.isfile(self.filename):
@@ -74,6 +74,7 @@ class TSP_BGNN_Generator(torch.utils.data.Dataset):
             file_data = f.readlines()
         
         l_data,l_pos = [],[]
+        print("Processing data...")
         for line in tqdm.tqdm(file_data):
             line = line.split(" ")  # Split into list
             num_nodes = int(line.index('output')//2)
