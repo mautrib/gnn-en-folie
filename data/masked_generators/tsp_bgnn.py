@@ -151,5 +151,11 @@ class TSP_BGNN_Generator(torch.utils.data.Dataset):
             l_pos.append((xs,ys))
         return l_data, l_pos
         
+    def __getitem__(self, i):
+        """ Fetch sample at index i """
+        return self.data[i]
 
+    def __len__(self):
+        """ Get dataset length """
+        return len(self.data)
 
