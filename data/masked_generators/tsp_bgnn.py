@@ -49,10 +49,10 @@ class TSP_BGNN_Generator(torch.utils.data.Dataset):
         data_dgl_exists = os.path.exists(path_dgl)
         if use_dgl and data_dgl_exists:
             print('Reading dataset at {}'.format(path_dgl))
-            data,pos = torch.load(path_dgl)
+            l_data,l_pos = torch.load(path_dgl)
         elif not use_dgl and data_exists:
             print('Reading dataset at {}'.format(path))
-            data,pos = torch.load(path)
+            l_data,l_pos = torch.load(path)
         elif use_dgl:
             print('Reading dataset from BGNN files.')
             l_data,l_pos = self.get_data_from_file(use_dgl=use_dgl)
