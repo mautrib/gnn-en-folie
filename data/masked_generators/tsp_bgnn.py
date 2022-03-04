@@ -13,8 +13,7 @@ from toolbox import utils
 class TSP_BGNN_Generator(torch.utils.data.Dataset):
     def __init__(self, name, args, coeff=1e8):
         self.name=name
-        subfolder_name = 'TSP-BGNN/'
-        path_dataset = os.path.join(args['path_dataset'], 'tsp_bgnn', subfolder_name)
+        path_dataset = os.path.join(args['path_dataset'], 'tsp_bgnn')
         self.path_dataset = path_dataset
         self.data = []
         
