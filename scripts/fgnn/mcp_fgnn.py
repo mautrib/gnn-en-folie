@@ -30,18 +30,17 @@ def erase_datasets(config):
     val_ds.remove_files()
     test_ds.remove_files()
 
-def step(planner):
-    task = planner.next_task()
-    print(f"Task: {task}")
-    config = get_config(config_path)
+def step(config, task):
     config['data']['train']['problems']['mcp']['clique_size'] = task.value
     config['data']['test']['problems']['mcp']['clique_size'] = task.value
     trainer = train(config)
     test(trainer, config)
     if ERASE_DATASETS: erase_datasets(config)
     wandb.finish()
-    planner.add_entry({task.column_name:task.value, "done":True})
-
 
 while planner.n_tasks!=0:
-    step(planner)
+    task = planner.next_task()
+    print(f"Task: {task}")
+    config = get_config(config_path)
+    step(config, task)
+    planner.add_entry({task.column_name:task.value, "done":True})

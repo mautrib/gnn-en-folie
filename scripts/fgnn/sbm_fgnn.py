@@ -36,10 +36,7 @@ def erase_datasets(config):
     val_ds.remove_files()
     test_ds.remove_files()
 
-def step(planner):
-    task = planner.next_task()
-    print(f"Task: {task}")
-    config = get_config(config_path)
+def step(config, task):
     p_inter = C-task.value/2
     p_outer = C+task.value/2
     config['data']['train']['problems'][PROBLEM]['p_inter'] = p_inter
@@ -50,8 +47,10 @@ def step(planner):
     test(trainer, config)
     if ERASE_DATASETS: erase_datasets(config)
     wandb.finish()
-    planner.add_entry({task.column_name:task.value, "done":True})
-
 
 while planner.n_tasks!=0:
-    step(planner)
+    task = planner.next_task()
+    print(f"Task: {task}")
+    config = get_config(config_path, task)
+    step(config, task)
+    planner.add_entry({task.column_name:task.value, "done":True})
