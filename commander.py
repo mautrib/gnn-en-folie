@@ -8,7 +8,7 @@ from data import get_test_dataset, get_train_val_datasets
 from metrics import setup_metric
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
-from pytorch_lightning.callbacks import EarlyStopping
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 import argparse
 
 def get_config(filename='default_config.yaml'):
@@ -41,7 +41,8 @@ def get_trainer_config(config):
     accelerator_config = utils.get_accelerator_dict(config['device'])
     trainer_config.update(accelerator_config)
     early_stopping = EarlyStopping('lr', verbose=True, mode='max', patience=1+config['train']['max_epochs'], divergence_threshold=config['train']['optim_args']['lr_stop'])
-    trainer_config['callbacks'] = [early_stopping]
+    checkpoint_callback = ModelCheckpoint(monitor="val_loss", save_top_k=3, verbose=True)
+    trainer_config['callbacks'] = [early_stopping, checkpoint_callback]
     clean_config = utils.restrict_dict_to_function(pl.Trainer.__init__, trainer_config)
     return clean_config
 
