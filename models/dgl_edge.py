@@ -16,8 +16,8 @@ class DGLEdgeLoss(torch.nn.Module):
 
 class DGL_Edge(GNN_Abstract_Base_Class):
     
-    def __init__(self,model, optim_args):
-        super().__init__(model, optim_args)
+    def __init__(self,model, optim_args, sync_dist=True):
+        super().__init__(model, optim_args, sync_dist=sync_dist)
         self.loss = DGLEdgeLoss()
         
     def forward(self, x):
@@ -27,7 +27,7 @@ class DGL_Edge(GNN_Abstract_Base_Class):
         g, target = batch
         raw_scores = self(g)
         loss_value = self.loss(raw_scores, target)
-        self.log('train_loss', loss_value)
+        self.log('train_loss', loss_value, sync_dist=self.sync_dist)
         self.log_metric('train',raw_scores=raw_scores, target=target)
         return loss_value
     
@@ -35,7 +35,7 @@ class DGL_Edge(GNN_Abstract_Base_Class):
         g, target = batch
         raw_scores = self(g)
         loss_value = self.loss(raw_scores, target)
-        self.log('val_loss', loss_value)
+        self.log('val_loss', loss_value, sync_dist=self.sync_dist)
         self.log_metric('train', raw_scores=raw_scores, target=target)
         return loss_value
     
@@ -43,6 +43,6 @@ class DGL_Edge(GNN_Abstract_Base_Class):
         g, target = batch
         raw_scores = self(g)
         loss_value = self.loss(raw_scores, target)
-        self.log('test_loss', loss_value)
+        self.log('test_loss', loss_value, sync_dist=self.sync_dist)
         self.log_metric('train', data=g, raw_scores=raw_scores, target=target)
         return loss_value

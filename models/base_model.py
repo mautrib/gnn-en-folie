@@ -4,7 +4,7 @@ from toolbox.utils import get_lr, restrict_dict_to_function
 
 class GNN_Abstract_Base_Class(pl.LightningModule):
 
-    def __init__(self,model, optim_args):
+    def __init__(self,model, optim_args, sync_dist=True):
         super().__init__()
         self.model = model
         self.initial_lr = optim_args['lr']
@@ -17,6 +17,7 @@ class GNN_Abstract_Base_Class(pl.LightningModule):
 
         self.use_metric = False
         self._metric_function = None
+        self.sync_dist = sync_dist
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.initial_lr)
@@ -36,8 +37,10 @@ class GNN_Abstract_Base_Class(pl.LightningModule):
         if start_using_metric: self.use_metric = True
         self._metric_function = metric_function
     
-    def log_metric(self, prefix, **kwargs):
+    def log_metric(self, prefix, sync_dist=None, **kwargs):
         if self.use_metric and self._metric_function is not None:
             arg_dict = restrict_dict_to_function(self._metric_function, kwargs)
             value_dict = self._metric_function(**arg_dict)
-            self.log(f'{prefix}.metrics', value_dict)
+            if sync_dist is None:
+                sync_dist = self.sync_dist
+            self.log(f'{prefix}.metrics', value_dict, sync_dist=sync_dist)
