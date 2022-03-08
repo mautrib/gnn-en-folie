@@ -27,16 +27,15 @@ data:
                 clique_size: 20 #To not plant a clique, use 0
 
 train: # Training parameters, you can add any Pytorch Lightning Trainer Arguments and pytorch DataLoader arguments
-    max_epochs: 100
-    batch_size: 64
+    max_epochs: 400
+    batch_size: 32
     optim_args:
         lr: !!float 1e-5
-        scheduler_step: 3
+        scheduler_step: 5
         scheduler_factor: 0.5
         lr_stop: !!float 1e-7
         monitor: val_loss #Value to monitor for the scheduler (For now, only val_loss)
     anew: Yes
-    start_model: observers/gnn_tsp/1rxn08tk/checkpoints/epoch=4-step=499.ckpt
 
 arch: # Architecture and model
     use_dgl: No
