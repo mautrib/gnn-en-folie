@@ -28,7 +28,6 @@ def get_observer(config):
     return logger
 
 def load_model(config, path):
-    path = config['train']['start_model']
     print(f'Loading base model from {path}... ', end = "")
     PL_Model_Class = get_pl_model(config)
     pl_model = PL_Model_Class.load_from_checkpoint(path, model=get_torch_model(config), optim_args=get_optim_args(config))
