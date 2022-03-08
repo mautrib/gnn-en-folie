@@ -18,7 +18,7 @@ MODEL = 'fgnn'
 WANDB_ENTITY = 'mautrib'
 WANDB_PROJECT = f"repr_{PROBLEM}"
 
-MODELS_DIR = "/home/mautrib/phd/gnn-en-folie/observers/test_mcp/11q1vfjp/" #f'observers/repr_{PROBLEM}/'
+MODELS_DIR = f'observers/repr_{PROBLEM}/'
 BASE_PATH = f'scripts/{MODEL}/'
 DATA_FILE = os.path.join(BASE_PATH, f'planner_files/recap_{PROBLEM}.csv')
 CONFIG_FILE_NAME = f'{PROBLEM}_{MODEL}.yaml'
