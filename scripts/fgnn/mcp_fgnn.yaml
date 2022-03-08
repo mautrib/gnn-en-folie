@@ -1,10 +1,11 @@
 ---
 project: repr
-device: gpu:1 #Can be 'cpu', 'gpu', 'tpu', 'ipu' (with an added ':#number of devices', default, 1 [ex: 'gpu:2]') or auto
+device: cpu:1 #Can be 'cpu', 'gpu', 'tpu', 'ipu' (with an added ':#number of devices', default, 1 [ex: 'gpu:2]') or auto
 problem: mcp
 test_enabled: Yes
 
 data:
+    use_maskedtensor: No
     path_dataset: datasets # Path where datasets are stored, default data/
     train: # Train/Val data generation parameters
         num_examples_train: 10000
@@ -17,7 +18,7 @@ data:
                 clique_size: 15 #To not plant a clique, use 0
             
     test: #Test data generation parameters
-        num_examples_test: 1000
+        num_examples_test: 10
         n_vertices: 100
         sparsify: None
         problems:

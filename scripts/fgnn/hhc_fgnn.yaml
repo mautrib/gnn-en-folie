@@ -5,6 +5,7 @@ problem: hhc
 test_enabled: Yes
 
 data:
+    use_maskedtensor: No
     path_dataset: datasets # Path where datasets are stored, default data/
     train: # Train/Val data generation parameters
         num_examples_train: 10000

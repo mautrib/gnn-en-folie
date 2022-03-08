@@ -1,4 +1,3 @@
-from json import load
 import yaml
 import toolbox.utils as utils
 import os
@@ -28,7 +27,7 @@ def get_observer(config):
         raise NotImplementedError(f"Observer {observer} not implemented.")
     return logger
 
-def load_model(config):
+def load_model(config, path):
     path = config['train']['start_model']
     print(f'Loading base model from {path}... ', end = "")
     PL_Model_Class = get_pl_model(config)
@@ -41,7 +40,7 @@ def get_trainer_config(config):
     accelerator_config = utils.get_accelerator_dict(config['device'])
     trainer_config.update(accelerator_config)
     early_stopping = EarlyStopping('lr', verbose=True, mode='max', patience=1+config['train']['max_epochs'], divergence_threshold=config['train']['optim_args']['lr_stop'])
-    checkpoint_callback = ModelCheckpoint(monitor="val_loss", save_top_k=3, verbose=True)
+    checkpoint_callback = ModelCheckpoint(monitor="val_loss", save_top_k=1, verbose=True)
     trainer_config['callbacks'] = [early_stopping, checkpoint_callback]
     clean_config = utils.restrict_dict_to_function(pl.Trainer.__init__, trainer_config)
     return clean_config
@@ -59,7 +58,7 @@ def train(config):
     if config['train']['anew']:
         pl_model = get_pipeline(config)
     else:
-        pl_model = load_model(config)
+        pl_model = load_model(config, config['train']['start_model'])
     setup_metric(pl_model, config)
     trainer = setup_trainer(config, pl_model)
     train_dataset, val_dataset = get_train_val_datasets(config)
@@ -72,7 +71,7 @@ def test(trainer, config):
                 'verbose':True
     }
     if trainer is None:
-        pl_model = load_model(config)
+        pl_model = load_model(config, config['train']['start_model'])
         trainer = pl.Trainer()
         arg_dict['model'] = pl_model
     else:
