@@ -14,7 +14,7 @@ VALUE_NAME = 'clique_size'
 MODEL = 'fgnn'
 
 #WANDB
-WANDB_ENTITY = "mautrib",
+WANDB_ENTITY = 'mautrib'
 WANDB_PROJECT = f"repr_{PROBLEM}"
 
 MODELS_DIR = f'observers/repr_{PROBLEM}/'

@@ -15,7 +15,7 @@ VALUE_NAME = 'fill_param'
 MODEL = 'fgnn'
 
 #WANDB
-WANDB_ENTITY = "mautrib",
+WANDB_ENTITY = 'mautrib'
 WANDB_PROJECT = f"repr_{PROBLEM}"
 
 MODELS_DIR = "/home/mautrib/phd/gnn-en-folie/observers/test_mcp/11q1vfjp/" #f'observers/repr_{PROBLEM}/'
