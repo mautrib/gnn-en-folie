@@ -6,11 +6,18 @@ from data import get_test_dataset
 from toolbox.planner import DataHandler
 from commander import get_config, load_model, setup_metric, setup_trainer
 import wandb
+wb_api = wandb.Api()
 import numpy as np
 
+#BASE VALUES
 PROBLEM = 'hhc'
 VALUE_NAME = 'fill_param'
 MODEL = 'fgnn'
+
+#WANDB
+WANDB_ENTITY = "mautrib",
+WANDB_PROJECT = f"repr_{PROBLEM}"
+
 MODELS_DIR = "/home/mautrib/phd/gnn-en-folie/observers/test_mcp/11q1vfjp/" #f'observers/repr_{PROBLEM}/'
 BASE_PATH = f'scripts/{MODEL}/'
 DATA_FILE = os.path.join(BASE_PATH, f'planner_files/recap_{PROBLEM}.csv')
@@ -24,6 +31,17 @@ l_musquare = np.linspace(0,25,26)
 VALUES = np.sqrt(l_musquare)
 
 DH = DataHandler(DATA_FILE)
+
+def get_exp_name_from_ckpt_path(ckpt_path):
+    name,_ = ckpt_path.split('/checkpoints/')
+    name = name[-8:]
+    return name
+
+def get_train_value_hhc(base_exp_name):
+    run = wb_api.run(f"{WANDB_ENTITY}/{WANDB_PROJECT}/{base_exp_name}")
+    config = run.config
+    value = config['data']['train']['problems'][PROBLEM][VALUE_NAME]
+    return value
 
 def handle_data(data_dict):
     handled = {}
@@ -42,6 +60,8 @@ def prepare_dataset(config, value):
 def step(path_to_chkpt):
     config = deepcopy(BASE_CONFIG)
     config['project'] = 'sweep'
+    base_exp_name = get_exp_name_from_ckpt_path(path_to_chkpt)
+    train_value = get_train_value_hhc(base_exp_name)
     pl_model = load_model(config, path_to_chkpt)
     setup_metric(pl_model, config)
     progress_bar = tqdm.tqdm(VALUES)
@@ -54,6 +74,7 @@ def step(path_to_chkpt):
         logged_metrics = trainer.logged_metrics
         clean_metrics = handle_data(logged_metrics)
         clean_metrics[VALUE_NAME] = value
+        clean_metrics['train_value'] = train_value
         DH.add_entry(clean_metrics)
 
 

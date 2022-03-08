@@ -44,11 +44,11 @@ def get_trainer_config(config):
     clean_config = utils.restrict_dict_to_function(pl.Trainer.__init__, trainer_config)
     return clean_config
 
-def setup_trainer(config, model):
+def setup_trainer(config, model, watch=True):
     trainer_config = get_trainer_config(config)
     if config['observers']['use']:
         logger = get_observer(config)
-        logger.watch(model)
+        if watch: logger.watch(model)
         trainer_config['logger'] = logger
     trainer = pl.Trainer(**trainer_config)
     return trainer
