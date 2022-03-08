@@ -1,3 +1,4 @@
+from copy import deepcopy
 import sys, os
 sys.path.append(os.getcwd())
 import tqdm
@@ -14,6 +15,7 @@ BASE_PATH = f'scripts/{MODEL}/'
 DATA_FILE = os.path.join(BASE_PATH, f'planner_files/recap_{PROBLEM}.csv')
 CONFIG_FILE_NAME = f'{PROBLEM}_{MODEL}.yaml'
 CONFIG_FILE = os.path.join(BASE_PATH, CONFIG_FILE_NAME)
+BASE_CONFIG = get_config(CONFIG_FILE)
 
 ERASE_DATASETS = True
 
@@ -36,15 +38,15 @@ def prepare_dataset(config, value):
     return test_dataset
 
 def step(path_to_chkpt):
-    config = get_config(CONFIG_FILE)
+    config = deepcopy(BASE_CONFIG)
     config['project'] = 'sweep'
+    pl_model = load_model(config, path_to_chkpt)
+    setup_metric(pl_model, config)
     progress_bar = tqdm.tqdm(VALUES)
     for value in progress_bar:
         progress_bar.set_description(f'Value {value}.')
-        pl_model = load_model(config, path_to_chkpt)
-        setup_metric(pl_model, config)
-        trainer = setup_trainer(config, pl_model)
         test_dataset = prepare_dataset(config, value)
+        trainer = setup_trainer(config, pl_model, watch=False)
         trainer.test(pl_model, test_dataloaders=test_dataset)
         wandb.finish()
         logged_metrics = trainer.logged_metrics
