@@ -74,6 +74,8 @@ def step(path_to_chkpt):
         progress_bar.set_description(f'Value {value}.')
         test_dataset = prepare_dataset(config, value)
         trainer = setup_trainer(config, pl_model, watch=False)
+        wandblogger = trainer.logger.experiment
+        wandblogger.config['train_value'] = train_value
         trainer.test(pl_model, test_dataloaders=test_dataset)
         wandb.finish()
         logged_metrics = trainer.logged_metrics
