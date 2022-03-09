@@ -6,6 +6,7 @@ from data import get_test_dataset
 from toolbox.planner import DataHandler, Planner
 from commander import get_config, load_model, setup_metric, setup_trainer
 import wandb
+from wandb.errors import CommError
 wb_api = wandb.Api()
 import numpy as np
 
@@ -63,7 +64,10 @@ def prepare_dataset(config, value):
 def step(path_to_chkpt):
     config = deepcopy(BASE_CONFIG)
     config['project'] = 'sweep'
-    base_exp_name = get_exp_name_from_ckpt_path(path_to_chkpt)
+    try:
+        base_exp_name = get_exp_name_from_ckpt_path(path_to_chkpt)
+    except CommError:
+        return
     train_value = get_train_value_hhc(base_exp_name)
     pl_model = load_model(config, path_to_chkpt)
     setup_metric(pl_model, config)
