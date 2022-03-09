@@ -64,11 +64,11 @@ def prepare_dataset(config, value):
 def step(path_to_chkpt):
     config = deepcopy(BASE_CONFIG)
     config['project'] = 'sweep'
+    base_exp_name = get_exp_name_from_ckpt_path(path_to_chkpt)
     try:
-        base_exp_name = get_exp_name_from_ckpt_path(path_to_chkpt)
+        train_value = get_train_value_hhc(base_exp_name)
     except CommError:
         return
-    train_value = get_train_value_hhc(base_exp_name)
     pl_model = load_model(config, path_to_chkpt)
     setup_metric(pl_model, config)
     progress_bar = tqdm.tqdm(VALUES)
