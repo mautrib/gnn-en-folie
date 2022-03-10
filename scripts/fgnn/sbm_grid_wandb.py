@@ -13,7 +13,7 @@ wb_api = wandb.Api()
 
 #BASE VALUES
 PROBLEM = 'mcp'
-VALUE_NAME = 'clique_size'
+VALUE_NAME = 'dc'
 VALUES = np.linspace(0,6,25)
 C=3
 MODEL = 'fgnn'
