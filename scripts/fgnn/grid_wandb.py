@@ -12,6 +12,18 @@ from pytorch_lightning.loggers import WandbLogger
 wb_api = wandb.Api()
 import argparse
 
+def get_train_value(run):
+    config = run.config
+    if PROBLEM == 'sbm':
+        p_outer = config['data']['train']['problems'][PROBLEM]['p_outer']
+        p_inter = config['data']['train']['problems'][PROBLEM]['p_inter']
+        value = p_outer-p_inter
+    elif PROBLEM in ('mcp', 'hhc'):
+        value = config['data']['train']['problems'][PROBLEM][VALUE_NAME]
+    else:
+        raise NotImplementedError(f'Problem {PROBLEM} config modification not implemented.')
+    return value
+
 def get_config_specific(value):
     config = deepcopy(BASE_CONFIG)
     if PROBLEM == 'sbm':
@@ -104,8 +116,9 @@ if __name__=='__main__':
         test_loaders.append(get_test_dataset(config))
 
     art = wandb.init(project=WANDB_REPO_PROJECT, reinit=True)
-    for run in tqdm.tqdm(runs, total=total_runs):
-        model_name = f'model-{run.id}{MODEL_VERSION}'
+    for train_run in tqdm.tqdm(runs, total=total_runs):
+        train_value = get_train_value(train_run)
+        model_name = f'model-{train_run.id}{MODEL_VERSION}'
         model_artifact_name = os.path.join(WANDB_ENTITY, WANDB_MODELS_PROJECT, model_name)
         print(f"Getting model artifact from : {model_artifact_name}")
         artifact = art.use_artifact(model_artifact_name, 'model')
@@ -117,6 +130,8 @@ if __name__=='__main__':
         summary = get_values(trainer)
         run = trainer.logger.experiment
         run.summary['values_logged'] = summary
+        run.summary['train_value'] = train_value
+        run.config['train_value'] = train_value
         wandb.finish()
         if ERASE_ARTIFACTS:
             os.remove(model_dir)
