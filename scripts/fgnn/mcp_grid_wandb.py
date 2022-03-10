@@ -2,7 +2,7 @@ from copy import deepcopy
 import sys, os
 sys.path.append(os.getcwd())
 import tqdm
-from data import get_test_dataset
+from data import get_test_dataset, get_test_generator
 from toolbox.planner import DataHandler, Planner
 from commander import get_config, get_trainer_config, load_model, setup_trainer
 import wandb
@@ -15,6 +15,8 @@ PROBLEM = 'mcp'
 VALUE_NAME = 'clique_size'
 VALUES = range(5,21)
 MODEL = 'fgnn'
+ERASE_DATASETS = False
+ERASE_ARTIFACTS = True
 
 #WANDB
 WANDB_ENTITY = 'mautrib'
@@ -30,8 +32,6 @@ CONFIG_FILE_NAME = f'{PROBLEM}_{MODEL}.yaml'
 CONFIG_FILE = os.path.join(BASE_PATH, CONFIG_FILE_NAME)
 BASE_CONFIG = get_config(CONFIG_FILE)
 
-ERASE_DATASETS = True
-
 DH = DataHandler(DATA_FILE)
 planner = Planner(ADVANCE_LOG_FILE)
 
@@ -42,7 +42,7 @@ def setup_trainer(config):
     wand_args = {
         'reinit': True
     }
-    wandblogger = WandbLogger(project=f"{config['project']}_{config['problem']}", log_model="all", save_dir=path, **wand_args)
+    wandblogger = WandbLogger(project=WANDB_REPO_PROJECT, log_model="all", save_dir=path, **wand_args)
     trainer_config['logger'] = wandblogger
     trainer = pl.Trainer(**trainer_config)
     return trainer
@@ -88,8 +88,16 @@ for run in tqdm.tqdm(runs, total=total_runs):
     run = trainer.logger.experiment
     run.summary['values_logged'] = summary
     wandb.finish()
+    if ERASE_ARTIFACTS:
+        os.remove(model_dir)
+        os.rmdir(art_dir)
+if ERASE_ARTIFACTS:
+    os.rmdir(os.path.join(BASE_PATH, 'artifacts'))
 
-
-    
-
+if ERASE_DATASETS:
+    for value in VALUES:
+        config = deepcopy(BASE_CONFIG)
+        config['data']['train']['problems'][PROBLEM][VALUE_NAME] = value
+        test_generator = get_test_generator(config)
+        test_generator.remove_files()
         

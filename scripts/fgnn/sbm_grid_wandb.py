@@ -2,7 +2,7 @@ from copy import deepcopy
 import sys, os
 sys.path.append(os.getcwd())
 import tqdm
-from data import get_test_dataset
+from data import get_test_dataset, get_test_generator
 from toolbox.planner import DataHandler, Planner
 from commander import get_config, get_trainer_config, load_model, setup_trainer
 import wandb
@@ -23,6 +23,8 @@ WANDB_ENTITY = 'mautrib'
 WANDB_MODELS_PROJECT = f"repr_{PROBLEM}"
 WANDB_REPO_PROJECT = f"grid_{PROBLEM}"
 MODEL_VERSION = ':best'
+ERASE_DATASETS = False
+ERASE_ARTIFACTS = True
 
 #VALUES_DEPENDING ON ABOVE
 BASE_PATH = f'scripts/{MODEL}/'
@@ -31,8 +33,6 @@ ADVANCE_LOG_FILE = os.path.join(BASE_PATH, f'planner_files/sweep_log_{PROBLEM}.c
 CONFIG_FILE_NAME = f'{PROBLEM}_{MODEL}.yaml'
 CONFIG_FILE = os.path.join(BASE_PATH, CONFIG_FILE_NAME)
 BASE_CONFIG = get_config(CONFIG_FILE)
-
-ERASE_DATASETS = True
 
 DH = DataHandler(DATA_FILE)
 planner = Planner(ADVANCE_LOG_FILE)
@@ -44,7 +44,7 @@ def setup_trainer(config):
     wand_args = {
         'reinit': True
     }
-    wandblogger = WandbLogger(project=f"{config['project']}_{config['problem']}", log_model="all", save_dir=path, **wand_args)
+    wandblogger = WandbLogger(project=WANDB_REPO_PROJECT, log_model="all", save_dir=path, **wand_args)
     trainer_config['logger'] = wandblogger
     trainer = pl.Trainer(**trainer_config)
     return trainer
@@ -84,7 +84,7 @@ for run in tqdm.tqdm(runs, total=total_runs):
     model_artifact_name = os.path.join(WANDB_ENTITY, WANDB_MODELS_PROJECT, model_name)
     print(f"Getting model artifact from : {model_artifact_name}")
     artifact = art.use_artifact(model_artifact_name, 'model')
-    art_dir = artifact.download()
+    art_dir = artifact.download(BASE_PATH)
     model_dir = os.path.join(art_dir, 'model.ckpt')
     pl_model = load_model(BASE_CONFIG, model_dir)
     trainer = setup_trainer(config)
@@ -93,8 +93,21 @@ for run in tqdm.tqdm(runs, total=total_runs):
     run = trainer.logger.experiment
     run.summary['values_logged'] = summary
     wandb.finish()
+    if ERASE_ARTIFACTS:
+        os.remove(model_dir)
+        os.rmdir(art_dir)
+if ERASE_ARTIFACTS:
+    os.rmdir(os.path.join(BASE_PATH, 'artifacts'))
 
-
+if ERASE_DATASETS:
+    for value in VALUES:
+        config = deepcopy(BASE_CONFIG)
+        p_inter = C-value/2
+        p_outer = C+value/2
+        config['data']['test']['problems'][PROBLEM]['p_inter'] = p_inter
+        config['data']['test']['problems'][PROBLEM]['p_outer'] = p_outer
+        test_generator = get_test_generator(config)
+        test_generator.remove_files()
     
 
         
