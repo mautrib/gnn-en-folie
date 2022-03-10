@@ -1,3 +1,4 @@
+from multiprocessing.spawn import prepare
 import yaml
 import toolbox.utils as utils
 import os
@@ -27,11 +28,12 @@ def get_observer(config):
         raise NotImplementedError(f"Observer {observer} not implemented.")
     return logger
 
-def load_model(config, path):
+def load_model(config, path, add_metric=True):
     print(f'Loading base model from {path}... ', end = "")
     PL_Model_Class = get_pl_model(config)
     pl_model = PL_Model_Class.load_from_checkpoint(path, model=get_torch_model(config), optim_args=get_optim_args(config))
     print('Done.')
+    if add_metric: setup_metric(pl_model, config)
     return pl_model
 
 def get_trainer_config(config):

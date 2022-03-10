@@ -47,7 +47,7 @@ class FGNN_Edge(GNN_Abstract_Base_Class):
         self.log_metric('val', raw_scores=raw_scores, target=target)
         return loss_value
     
-    def test_step(self, batch, batch_idx):
+    def test_step(self, batch, batch_idx, dataloader_idx=None):
         g, target = batch
         x = self(g)
         raw_scores = x.squeeze(-1)
