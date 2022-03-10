@@ -18,7 +18,7 @@ data:
                 clique_size: 15 #To not plant a clique, use 0
             
     test: #Test data generation parameters
-        num_examples_test: 10
+        num_examples_test: 1000
         n_vertices: 100
         sparsify: None
         problems:
