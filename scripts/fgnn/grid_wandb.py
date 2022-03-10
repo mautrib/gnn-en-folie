@@ -32,7 +32,7 @@ def get_config_specific(value):
         config['data']['test']['problems'][PROBLEM]['p_inter'] = p_inter
         config['data']['test']['problems'][PROBLEM]['p_outer'] = p_outer
     elif PROBLEM in ('mcp', 'hhc'):
-        config['data']['train']['problems'][PROBLEM][VALUE_NAME] = value
+        config['data']['test']['problems'][PROBLEM][VALUE_NAME] = value
     else:
         raise NotImplementedError(f'Problem {PROBLEM} config modification not implemented.')
     return config
