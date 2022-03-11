@@ -66,7 +66,9 @@ def get_pipeline(config, dgl_check=True):
     module = get_torch_model(config)
 
     optim_args = get_optim_args(config)
-    pipeline = PL_Model(module, optim_args)
+
+    batch_size = config['train']['batch_size']
+    pipeline = PL_Model(module, optim_args, batch_size=batch_size)
 
     return pipeline
 

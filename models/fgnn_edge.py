@@ -22,8 +22,8 @@ class EdgeClassifLoss(torch.nn.Module):
 
 class FGNN_Edge(GNN_Abstract_Base_Class):
     
-    def __init__(self,model, optim_args, sync_dist=True):
-        super().__init__(model, optim_args, sync_dist=sync_dist)
+    def __init__(self,model, optim_args, **kwargs):
+        super().__init__(model, optim_args, **kwargs)
         self.loss = EdgeClassifLoss()
         
     def forward(self, x):
