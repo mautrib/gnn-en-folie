@@ -51,6 +51,6 @@ def step(config, task):
 while planner.n_tasks!=0:
     task = planner.next_task()
     print(f"Task: {task}")
-    config = get_config(config_path, task)
+    config = get_config(config_path)
     step(config, task)
     planner.add_entry({task.column_name:task.value, "done":True})
