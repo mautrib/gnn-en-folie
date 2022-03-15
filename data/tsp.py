@@ -124,7 +124,7 @@ class TSP_Generator(Base_Generator):
                     data,pos = torch.load(path)
                     data = self.converting_dataset_to_dgl(data, sparsify=self.sparsify)
                     print('Saving dataset at {}'.format(path_dgl))
-                    torch.save(data, path_dgl)
+                    torch.save((data, pos), path_dgl)
             else:
                 print('Reading dataset at {}'.format(path))
                 data,pos = torch.load(path)
