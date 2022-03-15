@@ -105,7 +105,7 @@ def get_dataset(config:dict, type:str, dgl_check=True, mt_check=True, dataloader
     
     use_maskedtensor = config['data']['use_maskedtensor']
     problem = config['problem']
-    check_maskedtensor_compatibility(use_maskedtensor, problem, force_check=mt_check)
+    if not use_dgl: check_maskedtensor_compatibility(use_maskedtensor, problem, force_check=mt_check)
 
     dataset.load_dataset(use_dgl=use_dgl)
 
