@@ -134,7 +134,7 @@ class TSP_BGNN_Generator(torch.utils.data.Dataset):
                 edge_labels = torch.tensor(edge_labels)
                 target_dgl.edata['solution'] = edge_labels
                 
-                l_data.append(g, target_dgl)
+                l_data.append((g, target_dgl))
             else:
                 W = torch.tensor(W_val,dtype=torch.float)
                 B = distance_matrix_tensor_representation(W)
