@@ -88,10 +88,10 @@ class TSP_Generator(Base_Generator):
         num_examples = args['num_examples_' + name]
         self.n_vertices = args['n_vertices']
         self.sparsify = 0 if args['sparsify'] in (None, 0) else args['sparsify']
-        subfolder_name = 'TSP_{}_{}_{}_{}_{}'.format(self.generative_model, 
+        subfolder_name = 'TSP_{}_{}_{}_{}'.format(self.generative_model, 
                                                      self.distance,
                                                      num_examples,
-                                                     self.n_vertices, self.sparsify)
+                                                     self.n_vertices)
         path_dataset = os.path.join(args['path_dataset'], 'tsp', subfolder_name)
         super().__init__(name, path_dataset, num_examples)
         self.data = []
@@ -108,7 +108,7 @@ class TSP_Generator(Base_Generator):
         it does not exist
         """
         filename = self.name + '.pkl'
-        filename_dgl = self.name + '_dgl.pkl'
+        filename_dgl = self.name + f'-{self.sparsify}_dgl.pkl'
         path = os.path.join(self.path_dataset, filename)
         path_dgl = os.path.join(self.path_dataset, filename_dgl)
         data_exists = os.path.exists(path)
