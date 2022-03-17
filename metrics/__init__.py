@@ -24,6 +24,8 @@ def get_fgnn_node_metric(problem):
 def get_dgl_edge_metric(problem):
     if problem=='tsp':
         return tsp_edgefeat_compute_f1
+    elif problem=='tsp_bgnn':
+        return tsp_edgefeat_compute_f1
     elif problem=='mcp':
         return mcp_dgl_edge_compute_accuracy_unbatch
     elif problem=='hhc':

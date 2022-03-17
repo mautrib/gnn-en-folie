@@ -147,7 +147,7 @@ class GatedGCNNet_Edge(nn.Module):
         
         self.embedding_h = nn.Linear(in_dim, hidden_dim)
         self.embedding_e = nn.Linear(in_dim_edge, hidden_dim)
-        self.layers = nn.ModuleList([ GatedGCNLayerIsotropic(hidden_dim, hidden_dim, dropout,
+        self.layers = nn.ModuleList([ GatedGCNLayer(hidden_dim, hidden_dim, dropout,
                                                       self.batch_norm, self.residual) for _ in range(n_layers-1) ]) 
         self.layers.append(GatedGCNLayer(hidden_dim, out_dim, dropout, self.batch_norm, self.residual))
         self.MLP_layer = MLPReadout(2*out_dim, n_classes)
