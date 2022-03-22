@@ -45,8 +45,7 @@ class GNN_Abstract_Base_Class(pl.LightningModule):
     
     def log_metric(self, prefix, sync_dist=None, **kwargs):
         if self.use_metric and self._metric_function is not None:
-            arg_dict = restrict_dict_to_function(self._metric_function, kwargs)
-            value_dict = self._metric_function(**arg_dict)
+            value_dict = self._metric_function(**kwargs)
             if sync_dist is None:
                 sync_dist = self.sync_dist
             self.log(f'{prefix}.metrics', value_dict, sync_dist=sync_dist)
