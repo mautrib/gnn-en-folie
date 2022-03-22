@@ -1,4 +1,3 @@
-from jinja2 import evalcontextfilter
 from metrics.hhc import hhc_dgl_edge_compute_accuracy_unbatch, hhc_fgnn_edge_compute_accuracy
 from metrics.mcp import mcp_edgefeat_compute_accuracy, mcp_fgnn_edge_compute_accuracy
 from metrics.sbm import sbm_dgl_edge_compute_accuracy_unbatch, sbm_fgnn_edge_compute_accuracy
