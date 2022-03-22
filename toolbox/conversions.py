@@ -1,3 +1,4 @@
+from typing import Tuple
 import torch
 import dgl
 import numpy as np
@@ -26,11 +27,17 @@ def _adjacency_to_dgl(adj):
     gdgl = dgl.graph((src,dst),num_nodes=N)
     return gdgl
 
-def dense_tensor_to_edge_format(dense_tensor: torch.Tensor, dgl_graph: dgl.graph):
+def dense_tensor_to_edge_format(dense_tensor: torch.Tensor, edges: dgl.DGLGraph or Tuple):
+    """
+    Converts a dense tensor to edge_features, according to the edges given in edges.
+    edges can be either be of the form (u,v), that is, a set of src, dst or a dgl graph
+    """
     assert dense_tensor.dim()==2 and dense_tensor.shape[0]==dense_tensor.shape[1], f"Dense Tensor isn't of shape (N,N)"
-    N,_ = dense_tensor.shape
-    src,rst = dgl_graph.edges()
-    edge_tensor = dense_tensor[src,rst]
+    if isinstance(edges, dgl.DGLGraph):
+        src,dst = edges.edges()
+    else:
+        src, dst = edges
+    edge_tensor = dense_tensor[src,dst]
     return edge_tensor.unsqueeze(-1)
 
 def edge_format_to_dense_tensor(edge_features: torch.Tensor, graph: dgl.graph):

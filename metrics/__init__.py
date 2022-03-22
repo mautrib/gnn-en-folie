@@ -1,5 +1,6 @@
+from jinja2 import evalcontextfilter
 from metrics.hhc import hhc_dgl_edge_compute_accuracy_unbatch, hhc_fgnn_edge_compute_accuracy
-from metrics.mcp import mcp_dgl_edge_compute_accuracy_unbatch, mcp_fgnn_edge_compute_accuracy
+from metrics.mcp import mcp_edgefeat_compute_accuracy, mcp_fgnn_edge_compute_accuracy
 from metrics.sbm import sbm_dgl_edge_compute_accuracy_unbatch, sbm_fgnn_edge_compute_accuracy
 from metrics.tsp import tsp_edgefeat_compute_f1, tsp_fgnn_edge_compute_f1, tsp_dgl_edge_compute_f1, tsp_mt_edge_compute_f1
 from models.base_model import GNN_Abstract_Base_Class 
@@ -21,17 +22,17 @@ def get_fgnn_edge_metric(problem):
 def get_fgnn_node_metric(problem):
     raise NotImplementedError()
 
-def get_dgl_edge_metric(problem):
+def get_edgefeat_metric(problem):
     if problem=='tsp':
         return tsp_edgefeat_compute_f1
     elif problem=='tsp_bgnn':
         return tsp_edgefeat_compute_f1
     elif problem=='mcp':
-        return mcp_dgl_edge_compute_accuracy_unbatch
+        return mcp_edgefeat_compute_accuracy
     elif problem=='hhc':
-        return hhc_dgl_edge_compute_accuracy_unbatch
+        raise NotImplementedError(f"Metric for dgl edge problem {problem} has not been implemented.") #return hhc_dgl_edge_compute_accuracy_unbatch
     elif problem=='sbm':
-        return sbm_dgl_edge_compute_accuracy_unbatch
+        raise NotImplementedError(f"Metric for dgl edge problem {problem} has not been implemented.") #return sbm_dgl_edge_compute_accuracy_unbatch
     else:
         raise NotImplementedError(f"Metric for dgl edge problem {problem} has not been implemented.")
 
@@ -42,14 +43,15 @@ def setup_metric(pl_model: GNN_Abstract_Base_Class, config: dict, soft=True)-> N
     problem = config['problem']
     use_dgl = config['arch']['use_dgl']
     embed = config['arch']['embedding']
+    eval = config['arch']['eval']
     try:
-        if use_dgl and embed=='edge':
-            metric_fn = get_dgl_edge_metric(problem)
-        elif use_dgl and embed=='node':
+        if use_dgl and eval=='edge':
+            metric_fn = get_edgefeat_metric(problem)
+        elif use_dgl and eval=='node':
             metric_fn = get_dgl_node_metric(problem)
-        elif not(use_dgl) and embed=='edge':
+        elif not(use_dgl) and eval=='edge':
             metric_fn = get_fgnn_edge_metric(problem)
-        elif not(use_dgl) and embed=='node':
+        elif not(use_dgl) and eval=='node':
             metric_fn = get_fgnn_node_metric(problem)
         pl_model.attach_metric_function(metric_fn, start_using_metric=True)
     except NotImplementedError as ne:
