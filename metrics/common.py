@@ -39,8 +39,8 @@ def edgefeat_compute_f1(l_inferred, l_targets):
         y_onehot = y_onehot.type_as(solution)
         y_onehot.scatter_(0, ind, 1)
 
-        prec += precision_score(solution, y_onehot)
-        rec  += recall_score(solution, y_onehot)
+        prec += precision_score(solution.detach().cpu().numpy(), y_onehot.detach().cpu().numpy())
+        rec  += recall_score(solution.detach().cpu().numpy(), y_onehot.detach().cpu().numpy())
     prec = prec/bs
     rec = rec/bs
     f1 = 0
@@ -88,8 +88,8 @@ def fulledge_compute_f1(l_inferred, l_targets):
         y_onehot = y_onehot.type_as(cur_target)
         y_onehot.scatter_(0, ind, 1)
 
-        prec += precision_score(cur_target, y_onehot)
-        rec  += recall_score(cur_target, y_onehot)
+        prec += precision_score(cur_target.detach().cpu().numpy(), y_onehot.detach().cpu().numpy())
+        rec  += recall_score(cur_target.detach().cpu().numpy(), y_onehot.detach().cpu().numpy())
     prec = prec/bs
     rec = rec/bs
     f1 = 0
