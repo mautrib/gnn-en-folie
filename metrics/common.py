@@ -8,7 +8,6 @@ def _edgefeat_compute_accuracy(l_inferred, l_targets):
     """
     assert len(l_inferred)==len(l_targets), f"Size of inferred and target different : {len(l_inferred)} and {len(l_targets)}."
     bs = len(l_inferred)
-    
     acc = 0
     for inferred,solution in zip(l_inferred, l_targets):
         n_solution_edges = torch.sum(solution)
@@ -34,7 +33,7 @@ def edgefeat_compute_accuracy(raw_scores, target, data=None):
         l_target = [graph.edata['solution'].squeeze() for graph in unbatched_graphs]
     else:
         assert data is not None, "No data, can't find adjacency"
-        assert data.ndim()==4, "Data not recognized"
+        assert data.ndim==4, "Data not recognized"
         adjacency = data[:,:,:,1]
         l_srcdst = [(torch.where(adj>0)) for adj in adjacency]
         l_rs = [ graph[src,dst] for (graph,(src,dst)) in zip(raw_scores,l_srcdst)]
