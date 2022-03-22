@@ -1,6 +1,4 @@
-from metrics.hhc import hhc_edgefeat_compute_accuracy
-from metrics.mcp import mcp_edgefeat_compute_accuracy
-from metrics.sbm import sbm_edgefeat_compute_accuracy
+from metrics.common import edgefeat_compute_accuracy
 from metrics.tsp import tsp_edgefeat_compute_f1
 from models.base_model import GNN_Abstract_Base_Class 
 
@@ -10,11 +8,11 @@ def get_fgnn_edge_metric(problem):
     elif problem in ('tsp_mt', 'tsp_bgnn'):
         return tsp_edgefeat_compute_f1
     elif problem=='mcp':
-        return mcp_edgefeat_compute_accuracy
+        return edgefeat_compute_accuracy
     elif problem=='sbm':
-        return sbm_edgefeat_compute_accuracy
+        return edgefeat_compute_accuracy
     elif problem=='hhc':
-        return hhc_edgefeat_compute_accuracy
+        return edgefeat_compute_accuracy
     else:
         raise NotImplementedError(f"Metric for fgnn edge problem {problem} has not been implemented.")
 
@@ -27,11 +25,11 @@ def get_edgefeat_metric(problem):
     elif problem=='tsp_bgnn':
         return tsp_edgefeat_compute_f1
     elif problem=='mcp':
-        return mcp_edgefeat_compute_accuracy
+        return edgefeat_compute_accuracy
     elif problem=='hhc':
-        raise hhc_edgefeat_compute_accuracy
+        raise edgefeat_compute_accuracy
     elif problem=='sbm':
-        raise sbm_edgefeat_compute_accuracy
+        raise edgefeat_compute_accuracy
     else:
         raise NotImplementedError(f"Metric for dgl edge problem {problem} has not been implemented.")
 
