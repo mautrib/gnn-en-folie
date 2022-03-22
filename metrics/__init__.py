@@ -1,20 +1,20 @@
-from metrics.hhc import hhc_dgl_edge_compute_accuracy_unbatch, hhc_fgnn_edge_compute_accuracy
-from metrics.mcp import mcp_edgefeat_compute_accuracy, mcp_fgnn_edge_compute_accuracy
-from metrics.sbm import sbm_dgl_edge_compute_accuracy_unbatch, sbm_fgnn_edge_compute_accuracy
-from metrics.tsp import tsp_edgefeat_compute_f1, tsp_fgnn_edge_compute_f1, tsp_dgl_edge_compute_f1, tsp_mt_edge_compute_f1
+from metrics.hhc import hhc_edgefeat_compute_accuracy
+from metrics.mcp import mcp_edgefeat_compute_accuracy
+from metrics.sbm import sbm_edgefeat_compute_accuracy
+from metrics.tsp import tsp_edgefeat_compute_f1
 from models.base_model import GNN_Abstract_Base_Class 
 
 def get_fgnn_edge_metric(problem):
     if problem=='tsp':
-        return tsp_fgnn_edge_compute_f1
+        return tsp_edgefeat_compute_f1
     elif problem in ('tsp_mt', 'tsp_bgnn'):
-        return tsp_mt_edge_compute_f1
+        return tsp_edgefeat_compute_f1
     elif problem=='mcp':
-        return mcp_fgnn_edge_compute_accuracy
+        return mcp_edgefeat_compute_accuracy
     elif problem=='sbm':
-        return sbm_fgnn_edge_compute_accuracy
+        return sbm_edgefeat_compute_accuracy
     elif problem=='hhc':
-        return hhc_fgnn_edge_compute_accuracy
+        return hhc_edgefeat_compute_accuracy
     else:
         raise NotImplementedError(f"Metric for fgnn edge problem {problem} has not been implemented.")
 
@@ -29,9 +29,9 @@ def get_edgefeat_metric(problem):
     elif problem=='mcp':
         return mcp_edgefeat_compute_accuracy
     elif problem=='hhc':
-        raise NotImplementedError(f"Metric for dgl edge problem {problem} has not been implemented.") #return hhc_dgl_edge_compute_accuracy_unbatch
+        raise hhc_edgefeat_compute_accuracy
     elif problem=='sbm':
-        raise NotImplementedError(f"Metric for dgl edge problem {problem} has not been implemented.") #return sbm_dgl_edge_compute_accuracy_unbatch
+        raise sbm_edgefeat_compute_accuracy
     else:
         raise NotImplementedError(f"Metric for dgl edge problem {problem} has not been implemented.")
 
