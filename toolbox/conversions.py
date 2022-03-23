@@ -10,11 +10,12 @@ def sparsify_adjacency(adjacency, sparsify, distances):
     assert distances.shape == adjacency.shape, f"Distances of different shape than adjacency {distances.shape}!={adjacency.shape}"
     N,_ = adjacency.shape
     mask = torch.zeros_like(adjacency)
+    mask = mask.type_as(adjacency)
     if isinstance(distances, torch.Tensor): distances = distances.detach().cpu().numpy()
     knns = np.argpartition(distances, kth=sparsify, axis=-1)[:, sparsify ::-1].copy()
     range_tensor = torch.tensor(range(N)).unsqueeze(-1)
     mask[range_tensor,knns] = 1
-    mask = mask*(1-torch.eye(N)) #Remove the self value
+    mask = mask*(1-torch.eye(N).type_as(mask)) #Remove the self value
     return adjacency*mask
 
 def _adjacency_to_dgl(adj):
