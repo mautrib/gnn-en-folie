@@ -1,6 +1,6 @@
 import torch
 from toolbox.conversions import dgl_dense_adjacency, edge_format_to_dense_tensor, sparsify_adjacency
-from sklearn.metrics import precision_score, recall_score
+from sklearn.metrics import precision_score, recall_score, f1_score as sk_f1_score
 import dgl
 
 def f1_score(preds,labels):
@@ -40,19 +40,23 @@ def tsp_fgnn_edge_compute_f1(raw_scores,target,k_best=3):
     prec, rec, f1 =  f1_score(y_onehot,target)
     return {'precision': prec, 'recall': rec, 'f1': f1}
 
-def tsp_edgefeat_compute_f1(l_inferred, l_targets):
+def tsp_fulledge_compute_f1(l_inferred, l_targets, k_best=1):
     """
     Computes F1-score with the k_best best edges per row
-    For TSP with the chosen 3 best, the best result will be : prec=2/3, rec=1, f1=0.8 (only 2 edges are valid)
-     - l_inferred : list of tensors of shape (N_edges_i, 1)
-     - l_targets  : list of tensors of shape (N_edges_i, 1), (for DGL, issued from graph.edata['solution'], for FGNN, should be assembled beforehand)
+    For TSP with the chosen k_best=3, the best result will be : prec=2/3, rec=1, f1=0.8 (only 2 edges are valid)
+    k_best=1 is what benchmarking gnns uses
+     - l_inferred : list of tensors of shape (N, N)
+     - l_targets  : list of tensors of shape (N, N), (for DGL, issued from graph.edata['solution'], for FGNN, should be assembled beforehand)
     """
     assert len(l_inferred)==len(l_targets), f"Size of inferred and target different : {len(l_inferred)} and {len(l_targets)}."
     bs = len(l_inferred)
     prec, rec = 0, 0
     for target, inferred in zip(l_targets, l_inferred):
+        _,ind = torch.topk(inferred,k=k_best, dim=-1)
         y_onehot = torch.zeros_like(inferred)
-        y_onehot[inferred.detach().argmax(dim=0)] = 1 #That's different than usual
+        y_onehot.scatter_(1, ind, 1)
+        target = target.flatten()
+        y_onehot = y_onehot.flatten()
         prec += precision_score(target.detach().cpu().numpy(), y_onehot.detach().cpu().numpy(), average='binary')
         rec += recall_score(target.detach().cpu().numpy(), y_onehot.detach().cpu().numpy(), average='binary')
     prec = prec/bs
@@ -130,25 +134,6 @@ def tsp_mt_edge_compute_f1(raw_scores, target, k_best=3):
         f1 = 2*prec*rec/(prec+rec)
 
     return {'precision': prec, 'recall': rec, 'f1': f1}
-
-def tsp_mt_edge_compute_f1_sklearn(raw_scores, target, k_best=3):
-    """
-    Computes F1-score with the k_best best edges per row
-    For TSP with the chosen 3 best, the best result will be : prec=2/3, rec=1, f1=0.8 (only 2 edges are valid)
-    """
-    bs = len(raw_scores)
-    raw_score_tensors = [raw_scores[i] for i in range(bs)]
-    target_tensors = [target[i] for i in range(bs)]
-
-    
-    true_pos = 0
-    false_pos = 0
-    total_true_edges = 0
-    for raw_score, labels in zip(raw_score_tensors,target_tensors):
-        _, ind = torch.topk(raw_score, k_best, dim = 1) #Here chooses the 3 best choices
-        y_onehot = torch.zeros_like(raw_score)
-        y_onehot = y_onehot.type_as(raw_score)
-        y_onehot.scatter_(1, ind, 1)
 
 def tsp_edgefeat_converter_sparsify(raw_scores, target, data=None, sparsify=None, **kwargs):
     if isinstance(target, dgl.DGLGraph):

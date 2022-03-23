@@ -1,10 +1,12 @@
 from metrics.preprocess import edgefeat_converter, fulledge_converter
 from metrics.common import fulledge_compute_f1, edgefeat_compute_f1
-from metrics.tsp import tsp_edgefeat_compute_f1, tsp_edgefeat_converter_sparsify
+from metrics.tsp import tsp_edgefeat_converter_sparsify, tsp_fulledge_compute_f1
 from models.base_model import GNN_Abstract_Base_Class 
 
 def get_fulledge_metric(problem):
-    if problem=='mcp':
+    if problem=='tsp':
+        return tsp_fulledge_compute_f1
+    elif problem=='mcp':
         return fulledge_compute_f1
     elif problem=='sbm':
         return fulledge_compute_f1
@@ -15,7 +17,7 @@ def get_fulledge_metric(problem):
 
 def get_edgefeat_metric(problem):
     if problem=='tsp':
-        return tsp_edgefeat_compute_f1
+        return edgefeat_compute_f1
     elif problem=='mcp':
         return edgefeat_compute_f1
     elif problem=='hhc':
@@ -49,7 +51,7 @@ def get_preprocessing(embed, eval, problem):
             else:
                 raise NotImplementedError(f"Preprocessing for {embed=}, {eval=}, {problem=} not implemented")
         elif eval=='fulledge':
-            if problem in ('mcp','sbm'):
+            if problem in ('mcp','sbm','tsp'):
                 return fulledge_converter
             else:
                 raise NotImplementedError(f"Preprocessing for {embed=}, {eval=}, {problem=} not implemented")
@@ -85,7 +87,7 @@ def setup_metric(pl_model: GNN_Abstract_Base_Class, config: dict, soft=True)-> N
     except NotImplementedError as ne:
         if not soft:
             raise ne
-        print(f"There was a problem with the setup metric. I'll let it go anyways, but additional metrics won't be saved. Error is stated below:\n {ne}")
+        print(f"There was a problem with the setup metric. I'll let it go anyways, but additional metrics won't be saved. Error stated is: {ne}")
 
 
 
