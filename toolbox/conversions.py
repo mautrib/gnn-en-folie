@@ -10,7 +10,7 @@ def sparsify_adjacency(adjacency, sparsify, distances):
     assert distances.shape == adjacency.shape, f"Distances of different shape than adjacency {distances.shape}!={adjacency.shape}"
     N,_ = adjacency.shape
     mask = torch.zeros_like(adjacency)
-    if isinstance(distances, torch.Tensor): distances = distances.numpy()
+    if isinstance(distances, torch.Tensor): distances = distances.detach().cpu().numpy()
     knns = np.argpartition(distances, kth=sparsify, axis=-1)[:, sparsify ::-1].copy()
     range_tensor = torch.tensor(range(N)).unsqueeze(-1)
     mask[range_tensor,knns] = 1
