@@ -52,10 +52,9 @@ def tsp_edgefeat_compute_f1(l_inferred, l_targets):
     prec, rec = 0, 0
     for target, inferred in zip(l_targets, l_inferred):
         y_onehot = torch.zeros_like(inferred)
-        y_onehot = y_onehot.type_as(target)
         y_onehot[inferred.detach().argmax(dim=0)] = 1 #That's different than usual
-        prec += precision_score(target, y_onehot, average='binary')
-        rec += recall_score(target, y_onehot, average='binary')
+        prec += precision_score(target.detach().cpu().numpy(), y_onehot.detach().cpu().numpy(), average='binary')
+        rec += recall_score(target.detach().cpu().numpy(), y_onehot.detach().cpu().numpy(), average='binary')
     prec = prec/bs
     rec = rec/bs
     f1 = 0
