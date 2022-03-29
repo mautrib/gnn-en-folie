@@ -1,5 +1,6 @@
 import torch
 import dgl
+from metrics.common import edgefeat_compute_accuracy
 
 def sbm_fgnn_edge_compute_accuracy(raw_scores,target):
     """

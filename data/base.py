@@ -9,11 +9,11 @@ class Base_Generator(torch.utils.data.Dataset):
         self.name = name
         self.num_examples = num_examples
     
-    def converting_dataset_to_dgl(self, l_data):
+    def converting_dataset_to_dgl(self, l_data, **kwargs):
         print("Converting data to DGL format")
         l_data_dgl = []
         for data,target in tqdm.tqdm(l_data):
-            elt_dgl = connectivity_to_dgl(data)
+            elt_dgl = connectivity_to_dgl(data, **kwargs)
             target_dgl = self._solution_conversion(target, elt_dgl)
             l_data_dgl.append((elt_dgl,target_dgl))
         print("Conversion ended.")

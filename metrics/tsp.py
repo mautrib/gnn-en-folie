@@ -1,5 +1,7 @@
 import torch
-from toolbox.conversions import dgl_dense_adjacency, edge_format_to_dense_tensor
+from toolbox.conversions import dgl_dense_adjacency, edge_format_to_dense_tensor, sparsify_adjacency
+from sklearn.metrics import precision_score, recall_score, f1_score as sk_f1_score
+import dgl
 
 def f1_score(preds,labels):
     """
@@ -37,6 +39,32 @@ def tsp_fgnn_edge_compute_f1(raw_scores,target,k_best=3):
     y_onehot.scatter_(2, ind, 1)
     prec, rec, f1 =  f1_score(y_onehot,target)
     return {'precision': prec, 'recall': rec, 'f1': f1}
+
+def tsp_fulledge_compute_f1(l_inferred, l_targets, k_best=1):
+    """
+    Computes F1-score with the k_best best edges per row
+    For TSP with the chosen k_best=3, the best result will be : prec=2/3, rec=1, f1=0.8 (only 2 edges are valid)
+    k_best=1 is what benchmarking gnns uses
+     - l_inferred : list of tensors of shape (N, N)
+     - l_targets  : list of tensors of shape (N, N), (for DGL, issued from graph.edata['solution'], for FGNN, should be assembled beforehand)
+    """
+    assert len(l_inferred)==len(l_targets), f"Size of inferred and target different : {len(l_inferred)} and {len(l_targets)}."
+    bs = len(l_inferred)
+    prec, rec = 0, 0
+    for target, inferred in zip(l_targets, l_inferred):
+        _,ind = torch.topk(inferred,k=k_best, dim=-1)
+        y_onehot = torch.zeros_like(inferred)
+        y_onehot.scatter_(1, ind, 1)
+        target = target.flatten()
+        y_onehot = y_onehot.flatten()
+        prec += precision_score(target.detach().cpu().numpy(), y_onehot.detach().cpu().numpy(), average='binary')
+        rec += recall_score(target.detach().cpu().numpy(), y_onehot.detach().cpu().numpy(), average='binary')
+    prec = prec/bs
+    rec = rec/bs
+    f1 = 0
+    if prec+rec!=0:
+        f1 = 2*(prec*rec)/(prec+rec)
+    return {'precision':prec, 'recall':rec, 'f1':f1}
 
 def tsp_dgl_edge_compute_f1(raw_scores, target, k_best=3):
     """
@@ -106,3 +134,26 @@ def tsp_mt_edge_compute_f1(raw_scores, target, k_best=3):
         f1 = 2*prec*rec/(prec+rec)
 
     return {'precision': prec, 'recall': rec, 'f1': f1}
+
+def tsp_edgefeat_converter_sparsify(raw_scores, target, data=None, sparsify=None, **kwargs):
+    if isinstance(target, dgl.DGLGraph):
+        proba = torch.softmax(raw_scores,dim=-1)
+        proba_of_being_1 = proba[:,1]
+        
+        target.edata['inferred'] = proba_of_being_1
+        unbatched_graphs = dgl.unbatch(target)
+        l_inferred = [graph.edata['inferred'] for graph in unbatched_graphs]
+        l_target = [graph.edata['solution'].squeeze() for graph in unbatched_graphs]
+    else:
+        assert data is not None, "No data, can't find distances"
+        assert data.ndim==4, "Data not recognized"
+        distances = data[:,:,:,1]
+        adjacencies = (distances>0).to(float)
+        if sparsify in (None,0):
+            l_adjacencies = [adj for adj in adjacencies]
+        else:
+            l_adjacencies = [sparsify_adjacency(adj, sparsify, distance) for (adj,distance) in zip(adjacencies, distances)]
+        l_srcdst = [(torch.where(adj>0)) for adj in l_adjacencies]
+        l_inferred = [ graph[src,dst] for (graph,(src,dst)) in zip(raw_scores,l_srcdst)]
+        l_target = [ graph[src,dst] for (graph,(src,dst)) in zip(target,l_srcdst)]
+    return l_inferred, l_target

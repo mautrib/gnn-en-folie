@@ -3,7 +3,7 @@ import torch
 import dgl
 from data.base import Base_Generator
 from toolbox import utils
-from toolbox.conversions import dense_tensor_to_edge_format
+from toolbox.conversions import dense_tensor_to_edge_format, sparsify_adjacency
 import math
 import random
 import networkx
@@ -82,11 +82,12 @@ class TSP_Generator(Base_Generator):
     Traveling Salesman Problem Generator.
     Uses the pyconcorde wrapper : see https://github.com/jvkersch/pyconcorde (thanks a lot)
     """
-    def __init__(self, name, args, coeff=1e8):
+    def __init__(self, name, args, coeff_concorde=1e8, coeff_sparse=1e2):
         self.generative_model = args['generative_model']
         self.distance = args['distance_used']
         num_examples = args['num_examples_' + name]
         self.n_vertices = args['n_vertices']
+        self.sparsify = 0 if args['sparsify'] in (None, 0) else args['sparsify']
         subfolder_name = 'TSP_{}_{}_{}_{}'.format(self.generative_model, 
                                                      self.distance,
                                                      num_examples,
@@ -98,7 +99,7 @@ class TSP_Generator(Base_Generator):
         
         utils.check_dir(self.path_dataset)#utils.check_dir(self.path_dataset)
         self.constant_n_vertices = True
-        self.coeff = coeff
+        self.coeff_concorde = coeff_concorde
         self.positions = []
     
     def load_dataset(self, use_dgl=False):
@@ -107,7 +108,7 @@ class TSP_Generator(Base_Generator):
         it does not exist
         """
         filename = self.name + '.pkl'
-        filename_dgl = self.name + '_dgl.pkl'
+        filename_dgl = self.name + f'-{self.sparsify}_dgl.pkl'
         path = os.path.join(self.path_dataset, filename)
         path_dgl = os.path.join(self.path_dataset, filename_dgl)
         data_exists = os.path.exists(path)
@@ -121,9 +122,9 @@ class TSP_Generator(Base_Generator):
                     print('DGL file does not exist. Reading from regular file.')
                     print('Reading dataset at {}'.format(path))
                     data,pos = torch.load(path)
-                    data = self.converting_dataset_to_dgl(data)
+                    data = self.converting_dataset_to_dgl(data, sparsify=self.sparsify)
                     print('Saving dataset at {}'.format(path_dgl))
-                    torch.save(data, path_dgl)
+                    torch.save((data, pos), path_dgl)
             else:
                 print('Reading dataset at {}'.format(path))
                 data,pos = torch.load(path)
@@ -137,7 +138,7 @@ class TSP_Generator(Base_Generator):
             torch.save((l_data, self.positions), path)
             print('Creating dataset at {}'.format(path_dgl))
             print("Converting data to DGL format")
-            l_data_dgl = self.converting_dataset_to_dgl(l_data)
+            l_data_dgl = self.converting_dataset_to_dgl(l_data, sparsify=self.sparsify)
             print("Conversion ended.")
             print('Saving dataset at {}'.format(path_dgl))
             torch.save((l_data_dgl, self.positions), path_dgl)
@@ -158,7 +159,7 @@ class TSP_Generator(Base_Generator):
         xs = [g.nodes[node]['pos'][0] for node in g.nodes]
         ys = [g.nodes[node]['pos'][1] for node in g.nodes]
 
-        problem = TSPSolver.from_data([self.coeff*elt for elt in xs],[self.coeff*elt for elt in ys],self.distance) #1e8 because Concorde truncates the distance to the nearest integer
+        problem = TSPSolver.from_data([self.coeff_concorde*elt for elt in xs],[self.coeff_concorde*elt for elt in ys],self.distance) #1e8 because Concorde truncates the distance to the nearest integer
         solution = problem.solve(verbose=False)
         assert solution.success, f"Couldn't find solution! \n x =  {xs} \n y = {ys} \n {solution}"
 
