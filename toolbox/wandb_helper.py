@@ -24,7 +24,7 @@ def get_config(entity, project, run_id):
     run = wapi.run(exp_path)
     return run.config
 
-def get_best_model(entity, project, run_id, version='best'):
+def get_model(project, run_id, entity='', version='best'):
     """
     Retrieves the best model from a wandb run
     """
@@ -42,4 +42,15 @@ def get_best_model(entity, project, run_id, version='best'):
     shutil.rmtree(art_dir)
     return pl_model
 
-
+def find_entity():
+    """
+    Tries to find the default entity (wandb doesn't make it easy)
+    """
+    project = '__temp'
+    with wandb.init(reinit=True, project=project) as run:
+        rid = run.id
+        entity = run.entity
+    wapi = wandb.Api()
+    run = wapi.run(f"{entity}/{project}/{rid}")
+    run.delete()
+    return entity

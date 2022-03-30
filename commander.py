@@ -11,6 +11,8 @@ from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 import argparse
 
+import toolbox.wandb_helper as wbh
+
 def get_config(filename='default_config.yaml') -> dict:
     with open(filename, 'r') as f:
         config = yaml.safe_load(f)
@@ -31,7 +33,15 @@ def get_observer(config: dict):
 def load_model(config: dict, path: str, add_metric=True, **kwargs) -> GNN_Abstract_Base_Class:
     print(f'Loading base model from {path}... ', end = "")
     PL_Model_Class = get_pl_model(config)
-    pl_model = PL_Model_Class.load_from_checkpoint(path, model=get_torch_model(config), optim_args=get_optim_args(config))
+    try:
+        pl_model = PL_Model_Class.load_from_checkpoint(path, model=get_torch_model(config), optim_args=get_optim_args(config))
+    except FileNotFoundError as fnfe:
+        if config['observers']['observer']=='wandb':
+            print(f"Failed at finding model locally with error : {fnfe}. Trying to use W&B.")
+            project = f"{config['project']}_{config['problem']}"
+            pl_model = wbh.get_model(project, path)
+        else:
+            raise fnfe
     print('Done.')
     if add_metric:
         setup_metric(pl_model, config, **kwargs)
