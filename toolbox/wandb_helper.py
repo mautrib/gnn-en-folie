@@ -1,8 +1,6 @@
 import os
 import yaml
 import wandb
-import shutil
-from commander import load_model
 
 def find_exp_dir(base_path, exp_name):
     dirs = [name for name in os.listdir(base_path) if exp_name in name]
@@ -24,9 +22,9 @@ def get_config(entity, project, run_id):
     run = wapi.run(exp_path)
     return run.config
 
-def get_model(project, run_id, entity='', version='best'):
+def download_model(project, run_id, entity='', version='best'):
     """
-    Retrieves the best model from a wandb run
+    Downloads a model from a wandb run
     """
     exp_path = os.path.join(entity, project, run_id)
     wapi = wandb.Api()
@@ -38,9 +36,25 @@ def get_model(project, run_id, entity='', version='best'):
     art_dir = artifact.download('_temp')
     model_dir = os.path.join(art_dir, 'model.ckpt')
     config = run.config
-    pl_model = load_model(config, model_dir)
-    shutil.rmtree(art_dir)
-    return pl_model
+    return config, model_dir
+
+# def get_model(project, run_id, entity='', version='best'):
+#     """
+#     Retrieves the best model from a wandb run
+#     """
+#     exp_path = os.path.join(entity, project, run_id)
+#     wapi = wandb.Api()
+#     run = wapi.run(exp_path)
+#     model_name = f'model-{run_id}:{version}'
+#     model_artifact_name = os.path.join(entity, project, model_name)
+#     print(f"Getting model artifact from : {model_artifact_name}")
+#     artifact = wapi.artifact(model_artifact_name)
+#     art_dir = artifact.download('_temp')
+#     model_dir = os.path.join(art_dir, 'model.ckpt')
+#     config = run.config
+#     pl_model = load_model(config, model_dir)
+#     shutil.rmtree(art_dir)
+#     return pl_model
 
 def find_entity():
     """

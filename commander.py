@@ -30,21 +30,29 @@ def get_observer(config: dict):
         raise NotImplementedError(f"Observer {observer} not implemented.")
     return logger
 
-def load_model(config: dict, path: str, add_metric=True, **kwargs) -> GNN_Abstract_Base_Class:
+def load_model(config: dict, path: str, add_metric=True, **add_metric_kwargs) -> GNN_Abstract_Base_Class:
+    """
+     - config : dict. The configuration dictionary (careful, must correspond to the model trying to be loaded). If set to None, will try to download a model from W&B
+     - path : str. The local path of the Pytorch Lightning experiment, or the id of the run if need to be fetched on W&B
+     - add_metric: bool. Adds an external metric to the pytorch lightninh module.
+     - add_metric_kwargs: Arguments passed to the setup_metric function if activated.
+    """
     print(f'Loading base model from {path}... ', end = "")
-    PL_Model_Class = get_pl_model(config)
     try:
+        PL_Model_Class = get_pl_model(config)
         pl_model = PL_Model_Class.load_from_checkpoint(path, model=get_torch_model(config), optim_args=get_optim_args(config))
-    except FileNotFoundError as fnfe:
+    except (FileNotFoundError) as e:
         if config['observers']['observer']=='wandb':
-            print(f"Failed at finding model locally with error : {fnfe}. Trying to use W&B.")
+            print(f"Failed at finding model locally with error : {e}. Trying to use W&B.")
             project = f"{config['project']}_{config['problem']}"
-            pl_model = wbh.get_model(project, path)
+            wb_config, path = wbh.download_model(project, path)
+            PL_Model_Class = get_pl_model(config)
+            pl_model = PL_Model_Class.load_from_checkpoint(path, model=get_torch_model(wb_config), optim_args=get_optim_args(wb_config))
         else:
-            raise fnfe
+            raise e
     print('Done.')
     if add_metric:
-        setup_metric(pl_model, config, **kwargs)
+        setup_metric(pl_model, config, **add_metric_kwargs)
     return pl_model
 
 def get_trainer_config(config: dict) -> dict:
@@ -77,14 +85,14 @@ def train(config: dict)->pl.Trainer:
     trainer.fit(pl_model, train_dataset, val_dataset)
     return trainer
 
-def test(trainer: pl.Trainer or None, config: dict) -> None:
-    test_dataset = get_test_dataset(config)
-    arg_dict = {'dataloaders': test_dataset,
+def test(config: dict, trainer=None, dataloaders=None) -> None:
+    if dataloaders is None: dataloaders = get_test_dataset(config)
+    arg_dict = {'dataloaders': dataloaders,
                 'verbose':True
     }
     if trainer is None:
         pl_model = load_model(config, config['train']['start_model'], add_metric=False)
-        trainer = pl.Trainer()
+        trainer = setup_trainer(config, pl_model)
     else:
         arg_dict['ckpt_path'] = 'best'
         pl_model = trainer.model
@@ -111,7 +119,7 @@ def main():
     if training:
         trainer = train(config)
     if default_test or config['test_enabled']:
-        test(trainer, config)
+        test(config, trainer)
 
 if __name__=="__main__":
     pl.seed_everything(3787, workers=True)
