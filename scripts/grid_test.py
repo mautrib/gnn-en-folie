@@ -1,8 +1,9 @@
+import os, sys
+sys.path.append(os.getcwd())
 from copy import deepcopy
 from commander import get_config, load_model, setup_trainer
 import argparse
 import numpy as np
-import os
 from data import get_test_dataset
 from toolbox.planner import DataHandler, Planner
 import wandb
