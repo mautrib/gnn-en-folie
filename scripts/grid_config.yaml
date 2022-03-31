@@ -1,0 +1,48 @@
+---
+project: gridtest
+device: gpu:2 #Can be 'cpu', 'gpu', 'tpu', 'ipu' (with an added ':#number of devices', default, 1 [ex: 'gpu:2]') or auto
+problem: mcp
+test_enabled: Yes
+
+data:
+    use_maskedtensor: No
+    path_dataset: datasets # Path where datasets are stored, default data/
+    test: #Test data generation parameters
+        num_examples_test: 200
+        n_vertices: 100
+        min_vertices: 50
+        max_vertices: 100
+        sparsify: 0
+        problems:
+            tsp:
+                distance_used: EUC_2D
+                generative_model: Square01
+            tsp_mt:
+                distance_used: EUC_2D
+                generative_model: Square01
+            mcp:
+                edge_density: 0.5
+                clique_size: 20 #To not plant a clique, use 0
+            sbm:
+                p_inter : 0.9
+                p_outer : 0.1
+                alpha: 0.5
+            hhc:
+                generative_model: Gauss
+                cycle_param: 0
+                fill_param: 5
+
+train: # Training parameters, you can add any Pytorch Lightning Trainer Arguments and pytorch DataLoader arguments
+    batch_size:  128
+    anew: No
+    default_root_dir: "observers/lightning/"
+    strategy: dp
+
+arch:
+    embedding: edge
+    eval: edge
+
+observers:
+    use: Yes
+    base_dir: observers #Name of the path where loggers will save their files if needed
+    observer: wandb #For now, only wandb

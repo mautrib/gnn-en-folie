@@ -1,108 +1,63 @@
-from re import A
 import torch
 import dgl
 from toolbox.conversions import dgl_dense_adjacency, edge_format_to_dense_tensor
 from toolbox.searches.mcp import mcp_beam_method
-from numpy import argwhere as npargwhere
-from metrics.common import edgefeat_compute_accuracy
+from metrics.common import edgefeat_total as common_edgefeat_total, fulledge_total as common_fulledge_total
 
-def mcp_fgnn_edge_compute_accuracy(raw_scores,target):
+###EDGEFEAT
+def edgefeat_beamsearch(l_inferred, l_targets, l_adjacency) -> dict:
     """
-    weights and target should be (bs,n,n)
+     - l_inferred : list of tensor of shape (N_edges_i)
+     - l_targets : list of tensors of shape (N_edges_i) (For DGL, from target.edata['solution'], for FGNN, converted)
+     - l_adjacency: list of couples of tensors of size ((N_edges_i), (N_edges_i)) corresponding to the edges (src, dst) of the graph
     """
-    clique_sizes,_ = torch.max(target.sum(dim=-1),dim=-1) #The '+1' is because the diagonal of the target is 0
-    clique_sizes += 1
-    bs,n,_ = raw_scores.shape
-    true_pos = 0
-    total_n_vertices = 0
 
-    probas = torch.sigmoid(raw_scores)
+    l_dgl = [dgl.graph((src,dst)) for src,dst in l_adjacency]
+    full_inferred = [edge_format_to_dense_tensor(inferred,graph) for inferred,graph in zip(l_inferred, l_dgl)]
+    full_target = [edge_format_to_dense_tensor(target,graph) for target,graph in zip(l_targets, l_dgl)]
+    full_adjacency = [dgl_dense_adjacency(graph) for graph in l_dgl]
 
-    deg = torch.sum(probas, dim=-1)
-    inds = [ (torch.topk(deg[k],int(clique_sizes[k].item()),dim=-1))[1] for k in range(bs)]
-    for i,_ in enumerate(raw_scores):
-        sol = torch.sum(target[i],dim=1) #Sum over rows !
-        ind = inds[i]
-        for idx in ind:
-            idx = idx.item()
-            if sol[idx]:
-                true_pos += 1
-        total_n_vertices+=clique_sizes[i].item()
-    return {'accuracy': true_pos/total_n_vertices}
+    return fulledge_beamsearch(full_inferred, full_target, full_adjacency)
 
-def mcp_dgl_edge_compute_f1(raw_scores, target, threshold=0.5):
+def edgefeat_total(l_inferred, l_targets, l_adjacency) -> dict:
+    final_dict = {}
+    final_dict.update(common_edgefeat_total(l_inferred, l_targets))
+    final_dict.update(edgefeat_beamsearch(l_inferred, l_targets, l_adjacency))
+    return final_dict
+
+###FULLEDGE
+def fulledge_beamsearch(l_inferred, l_targets, l_adjacency) -> dict:
     """
-     - raw_scores : shape (N_edges, 2)
-     - target : dgl graph with target.edata['solution'] of shape (N_edges,1)
+     - l_inferred : list of tensor of shape (N_i,N_i)
+     - l_targets : list of tensors of shape (N_i,N_i)
+     - l_adjacency: list of adjacency matrices of size (N_i,N_i)
     """
-    assert raw_scores.shape[1]==2, f"Scores given by model are not given with two classes but with {raw_scores.shape[1]}"
-    solution = target.edata['solution'].squeeze()
-    n_solution_edges = torch.sum(solution)
-    #proba = torch.softmax(raw_scores,dim=-1)
-    scores_of_being_1 = raw_scores[:,1]
-    #dense_proba_of_1 = edge_format_to_dense_tensor(proba_of_being_1, target)
-    
-    _, ind = torch.topk(scores_of_being_1, k=n_solution_edges)
-    y_onehot = torch.zeros_like(solution)
-    y_onehot = y_onehot.type_as(solution)
-    y_onehot.scatter_(0, ind, 1)
+    assert len(l_inferred)==len(l_targets)==len(l_adjacency), f"Size of inferred, target and ajacency different : {len(l_inferred)}, {len(l_targets)} and {len(l_adjacency)}."
+    bs = len(l_inferred)
 
-    true_pos = torch.sum(y_onehot*solution)
-    false_pos = torch.sum(y_onehot*(1-solution))
-    prec = true_pos/(true_pos+false_pos)
-    rec = true_pos/n_solution_edges
-    if prec+rec == 0:
-        f1 = 0.0
-    else:
-        f1 = 2*prec*rec/(prec+rec)
-    return {'precision': prec, 'recall': rec, 'f1': f1}
-
-def mcp_dgl_edge_compute_beamsearch_accuracy(raw_scores,target):
-    """
-     - raw_scores : shape (N_edges, 2)
-     - target : dgl graph with target.edata['solution'] of shape (N_edges,1)
-    """
-    assert raw_scores.shape[1]==2, f"Scores given by model are not given with two classes but with {raw_scores.shape[1]}"
-    data = target
-    proba = torch.softmax(raw_scores,dim=-1)
-    proba_of_being_1 = proba[:,1]
-    #dense_proba_of_1 = edge_format_to_dense_tensor(proba_of_being_1, target)
-
-    data.edata['inferred'] = proba_of_being_1
-    unbatched_graphs = dgl.unbatch(data)
-    adjs = [dgl_dense_adjacency(graph) for graph in unbatched_graphs]
-    scores = [graph.edata['inferred'] for graph in unbatched_graphs]
-    scores_dense = [edge_format_to_dense_tensor(score, graph) for score,graph in zip(scores,unbatched_graphs)]
-    bs = len(scores_dense)
-    N,_ = scores_dense[0].shape
-    batched_score_dense = torch.zeros((bs, N,N))
-    for i,elt in enumerate(scores_dense):
-        batched_score_dense[i,:,:] = elt[:,:]
-
-    l_cliques = mcp_beam_method(adjs, batched_score_dense, normalize=False)
+    l_cliques = mcp_beam_method(l_adjacency, l_inferred, normalize=False)
 
     true_pos = 0
     total_count = 0
-    for elt, graph_elt in zip(l_cliques, unbatched_graphs):
-        target_edge_features = graph_elt.edata['solution']
-        target_clique_size = torch.sum(target_edge_features)
-        indices = npargwhere((target_edge_features==1).numpy())[:,0]
-        assert len(indices)==target_clique_size, "Different target clique size and number of indices of edges. The target matrix doesn't have only zeros and ones ?"
-        assert len(indices)>0, "No solution edges ?"
-        ins,outs = graph_elt.find_edges(indices)
-        if len(elt)>=target_clique_size:
-            true_pos += len(indices)
-        else:
-            for u,v in zip(ins,outs):
-                if u in elt and v in elt:
-                    true_pos+=1
-        total_count += len(indices)
+    size_error_percentage = 0
+    for inferred_clique, target in zip(l_cliques, l_targets):
+        target_degrees = target.sum(-1)
+        target_clique_set = set(torch.where(target_degrees>0)[0].detach().cpu().numpy())
+        target_clique_size = len(target_clique_set)
+        inf_clique_size = len(inferred_clique)
+        
+        true_pos += len(target_clique_set.intersection(inferred_clique))
+        total_count += target_clique_size
 
-        # for u,v in zip(in_edges, out_edges):
-        #     if u in elt and v in elt:
-        #         true_pos += 1
-        # total = target_elt.n_edges()
+        size_error_percentage += (inf_clique_size-target_clique_size)/target_clique_size
+
 
     acc = true_pos/total_count
     assert acc<=1, "Accuracy over 1, not normal."
-    return {'accuracy': acc}
+    return {'bs-accuracy': acc, 'bs-size_error_percentage': size_error_percentage}
+
+def fulledge_total(l_inferred, l_targets, l_adjacency) -> dict:
+    final_dict = {}
+    final_dict.update(common_fulledge_total(l_inferred, l_targets))
+    final_dict.update(fulledge_beamsearch(l_inferred, l_targets, l_adjacency))
+    return final_dict
