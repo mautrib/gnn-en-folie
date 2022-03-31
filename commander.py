@@ -55,19 +55,19 @@ def load_model(config: dict, path: str, add_metric=True, **add_metric_kwargs) ->
         setup_metric(pl_model, config, **add_metric_kwargs)
     return pl_model
 
-def get_trainer_config(config: dict) -> dict:
+def get_trainer_config(config: dict, only_test=False) -> dict:
     trainer_config = config['train']
     accelerator_config = utils.get_accelerator_dict(config['device'])
     trainer_config.update(accelerator_config)
-    early_stopping = EarlyStopping('lr', verbose=True, mode='max', patience=1+config['train']['max_epochs'], divergence_threshold=config['train']['optim_args']['lr_stop'])
-    checkpoint_callback = ModelCheckpoint(monitor="val_loss", save_top_k=1, verbose=True)
-    trainer_config['callbacks'] = [early_stopping, checkpoint_callback]
+    if not only_test:
+        early_stopping = EarlyStopping('lr', verbose=True, mode='max', patience=1+config['train']['max_epochs'], divergence_threshold=config['train']['optim_args']['lr_stop'])
+        checkpoint_callback = ModelCheckpoint(monitor="val_loss", save_top_k=1, verbose=True)
+        trainer_config['callbacks'] = [early_stopping, checkpoint_callback]
     clean_config = utils.restrict_dict_to_function(pl.Trainer.__init__, trainer_config)
     return clean_config
 
 def setup_trainer(config: dict, model: GNN_Abstract_Base_Class, watch=True, only_test=False) -> pl.Trainer:
-    trainer_config={}
-    if not only_test: trainer_config = get_trainer_config(config)
+    trainer_config = get_trainer_config(config, only_test=only_test)
     if config['observers']['use']:
         logger = get_observer(config)
         if watch: logger.watch(model)
