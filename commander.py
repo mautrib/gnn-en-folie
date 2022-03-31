@@ -65,8 +65,9 @@ def get_trainer_config(config: dict) -> dict:
     clean_config = utils.restrict_dict_to_function(pl.Trainer.__init__, trainer_config)
     return clean_config
 
-def setup_trainer(config: dict, model: GNN_Abstract_Base_Class, watch=True) -> pl.Trainer:
-    trainer_config = get_trainer_config(config)
+def setup_trainer(config: dict, model: GNN_Abstract_Base_Class, watch=True, only_test=False) -> pl.Trainer:
+    trainer_config={}
+    if not only_test: trainer_config = get_trainer_config(config)
     if config['observers']['use']:
         logger = get_observer(config)
         if watch: logger.watch(model)
