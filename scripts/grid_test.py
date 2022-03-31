@@ -1,13 +1,15 @@
 import os, sys
 sys.path.append(os.getcwd())
 from copy import deepcopy
-from commander import get_config, load_model, setup_trainer
 import argparse
 import numpy as np
-from data import get_test_dataset
-from toolbox.planner import DataHandler, Planner
 import wandb
 import tqdm
+
+from data import get_test_dataset
+from commander import get_config, load_model, setup_trainer
+from metrics import setup_metric
+from toolbox.planner import DataHandler, Planner
 
 def get_config_specific(value):
     config = deepcopy(BASE_CONFIG)
@@ -55,7 +57,7 @@ if __name__=='__main__':
     BASE_PATH = 'scripts/'
     DATA_FILE = os.path.join(BASE_PATH, f'planner_files/recap_{PROBLEM}.csv')
     ADVANCE_LOG_FILE = os.path.join(BASE_PATH, f'planner_files/sweep_log_{PROBLEM}.csv')
-    CONFIG_FILE_NAME = f'default_config.yaml'
+    CONFIG_FILE_NAME = f'grid_config.yaml'
     CONFIG_FILE = os.path.join(BASE_PATH, CONFIG_FILE_NAME)
     BASE_CONFIG = get_config(CONFIG_FILE)
 
@@ -75,6 +77,7 @@ if __name__=='__main__':
         test_loaders.append(get_test_dataset(config))
     
     for run in tqdm.tqdm(runs, total=len(runs)):
-        pl_model = load_model(run.config, run.id, istest=True)
+        pl_model = load_model(run.config, run.id, add_metric=False)
+        setup_metric(pl_model, BASE_CONFIG, istest=True)
         trainer = setup_trainer(BASE_CONFIG, pl_model)
         trainer.test(pl_model, dataloaders=test_loaders)
