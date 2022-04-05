@@ -51,7 +51,7 @@ def fulledge_beamsearch(l_inferred, l_targets, l_adjacency) -> dict:
 
         size_error_percentage += (inf_clique_size-target_clique_size)/target_clique_size
 
-
+    size_error_percentage/=bs
     acc = true_pos/total_count
     assert acc<=1, "Accuracy over 1, not normal."
     return {'bs-accuracy': acc, 'bs-size_error_percentage': size_error_percentage}
