@@ -40,6 +40,18 @@ def get_values(trainer):
         total_dict[f'{value:.4f}'] = values_dict
     return total_dict
 
+def get_train_value(run):
+    config = run.config
+    if PROBLEM == 'sbm':
+        p_outer = config['data']['train']['problems'][PROBLEM]['p_outer']
+        p_inter = config['data']['train']['problems'][PROBLEM]['p_inter']
+        value = p_outer-p_inter
+    elif PROBLEM in ('mcp', 'hhc'):
+        value = config['data']['train']['problems'][PROBLEM][VALUE_NAME]
+    else:
+        raise NotImplementedError(f'Problem {PROBLEM} config modification not implemented.')
+    return value
+
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Grid testing on the experiments from one W&B repository.')
     parser.add_argument('problem', metavar='problem', choices = ('mcp','hhc','sbm'), help='Need to choose an experiment')
@@ -49,7 +61,7 @@ if __name__=='__main__':
     print(f"Working on problem '{PROBLEM}'")
     if PROBLEM == 'mcp':
         VALUE_NAME = 'clique_size'
-        VALUES = range(5,8)
+        VALUES = range(5,20)
     elif PROBLEM == 'sbm':
         VALUE_NAME = 'dc'
         VALUES = np.linspace(0,6,25)
@@ -65,7 +77,7 @@ if __name__=='__main__':
     ERASE_ARTIFACTS = True
 
     #WANDB
-    WANDB_MODELS_PROJECT = f"test_{PROBLEM}"
+    WANDB_MODELS_PROJECT = f"repr_{PROBLEM}"
 
     #VALUES_DEPENDING ON ABOVE
     BASE_PATH = 'scripts/'
@@ -96,6 +108,7 @@ if __name__=='__main__':
         setup_metric(pl_model, BASE_CONFIG, istest=True)
         trainer = setup_trainer(BASE_CONFIG, pl_model, only_test=True)
         trainer.test(pl_model, dataloaders=test_loaders)
+        trainer.logger.experiment.summary['train_value'] = get_train_value(run)
         trainer.logger.experiment.summary['values'] = [value for value in VALUES]
         trainer.logger.experiment.summary['logged'] = trainer.logged_metrics
         wandb.finish()
