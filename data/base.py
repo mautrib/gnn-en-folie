@@ -71,8 +71,16 @@ class Base_Generator(torch.utils.data.Dataset):
         raise NotImplementedError("This function should be implemented in your generator. 'Base_Generator' is an abstract class and this function should be overwritten in your inherited generator class.")
     
     def remove_files(self):
-        os.remove(os.path.join(self.path_dataset, self.name + '.pkl'))
-        os.remove(os.path.join(self.path_dataset, self.name + '_dgl.pkl'))
+        base_file = os.path.join(self.path_dataset, self.name + '.pkl')
+        dgl_file = os.path.join(self.path_dataset, self.name + '_dgl.pkl')
+        try:
+            os.remove(base_file)
+        except FileNotFoundError:
+            print(f'File {base_file} already removed.')
+        try:
+            os.remove(dgl_file)
+        except FileNotFoundError:
+            print(f'File {dgl_file} already removed.')
     
     def create_dataset(self):
         l_data = []
