@@ -24,10 +24,8 @@ def get_config_specific(value, config):
 
 def erase_datasets(config):
     train_ds, val_ds = get_train_val_generators(config)
-    test_ds = get_test_generator(config)
     train_ds.remove_files()
     val_ds.remove_files()
-    test_ds.remove_files()
 
 if __name__=='__main__':
     
