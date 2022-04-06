@@ -62,7 +62,6 @@ if __name__=='__main__':
     CONFIG_PATH = os.path.join(BASE_PATH, CONFIG_FILE)
     PLANNER_PATH = os.path.join(BASE_PATH, PLANNER_FILE)
     BASE_CONFIG = get_config(CONFIG_PATH)
-    BASE_CONFIG['project'] = BASE_CONFIG['project'] + f'_{PROBLEM}'
 
     tasks = [Task(VALUE_NAME, value) for value in VALUES]
 
