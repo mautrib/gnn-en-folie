@@ -1,0 +1,60 @@
+---
+project: trained_models
+device: gpu:2 #Can be 'cpu', 'gpu', 'tpu', 'ipu' (with an added ':#number of devices', default, 1 [ex: 'gpu:2]') or auto
+problem: mcp
+test_enabled: No
+
+data:
+    use_maskedtensor: No
+    path_dataset: datasets # Path where datasets are stored, default data/
+    train: # Train/Val data generation parameters
+        num_examples_train: 10000
+        num_examples_val: 1000
+        n_vertices: 100
+        sparsify: 0 #Only works for not fgnns. Put to None if you don't want sparsifying, to an int if you do
+        problems:
+            mcp:
+                edge_density: 0.5
+            sbm:
+                alpha: 0.5
+            hhc:
+                generative_model: Gauss
+                cycle_param: 0
+
+train: # Training parameters, you can add any Pytorch Lightning Trainer Arguments and pytorch DataLoader arguments
+    max_epochs: 400
+    batch_size:  128
+    optim_args:
+        lr: !!float 1e-5
+        scheduler_step: 5
+        scheduler_factor: 0.5
+        lr_stop: !!float 1e-7
+        monitor: val_loss #Value to monitor for the scheduler (For now, only val_loss)
+    anew: Yes
+    default_root_dir: "observers/lightning/"
+    strategy: dp
+
+arch: # Architecture and model
+    use_dgl: No
+    name: fgnn #fgnn, gatedgcn
+    embedding: edge #node or edge
+    eval: edge #edge, fulledge, (node in the future)
+    configs:
+        fgnn:
+            num_blocks: 3
+            original_features_num: 2 
+            in_features: 64
+            out_features: 1
+            depth_of_mlp: 3
+            input_embed: No #To remove for tsp and hhc
+        gatedgcn:
+            n_layers: 12
+            in_dim: 1
+            in_dim_edge: 1
+            hidden_dim: 64
+            n_classes: 2
+
+observers:
+    use: Yes
+    base_dir: observers #Name of the path where loggers will save their files if needed
+    observer: wandb #For now, only wandb

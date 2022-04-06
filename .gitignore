@@ -20,7 +20,7 @@ wandb/
 lightning_logs/
 
 #scripts planner files
-scripts/fgnn/planner_files/
+*planner_files/
 
 #PYTHON GITIGNORE
 # Byte-compiled / optimized / DLL files

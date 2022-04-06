@@ -16,6 +16,17 @@ class DataHandler():
         self.data.to_csv(filepath, index=False)
         print(f'Written to {filepath}')
     
+    def reset(self, filepath=''):
+        if filepath!='':
+            self.filepath = filepath
+        try:
+            os.remove(self.filepath)
+        except FileNotFoundError:
+            print("Data already erased. ", end="")
+        print("Cleaning my data... ", end='')
+        self.read()
+        print('Done.')
+    
     def read(self,filepath=''):
         if filepath=='':
             filepath = self.filepath
