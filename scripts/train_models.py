@@ -14,10 +14,10 @@ def get_config_specific(value, config):
     if PROBLEM == 'sbm':
         p_inter = C-value/2
         p_outer = C+value/2
-        config['data']['test']['problems'][PROBLEM]['p_inter'] = p_inter
-        config['data']['test']['problems'][PROBLEM]['p_outer'] = p_outer
+        config['data']['train']['problems'][PROBLEM]['p_inter'] = p_inter
+        config['data']['train']['problems'][PROBLEM]['p_outer'] = p_outer
     elif PROBLEM in ('mcp', 'hhc'):
-        config['data']['test']['problems'][PROBLEM][VALUE_NAME] = value
+        config['data']['train']['problems'][PROBLEM][VALUE_NAME] = value
     else:
         raise NotImplementedError(f'Problem {PROBLEM} config modification not implemented.')
     return config
