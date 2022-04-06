@@ -34,13 +34,13 @@ if __name__=='__main__':
     seed_everything(5344)
     
     parser = argparse.ArgumentParser(description='Grid testing on the experiments from one W&B repository.')
-    parser.add_argument('--problem', metavar='problem', choices = ('mcp','hhc','sbm'), help='Need to choose an experiment')
-    parser.add_argument('--erase', metavar='erase', nargs='?', type=bool, const=True, help='Set to 0 to conserve datasets.')
-    parser.add_argument('--reset', metavar='reset', nargs='?', type=bool, const=False, help='Set to 0 to erase all memory of values computed up to now.')
+    parser.add_argument('problem', metavar='problem', choices = ('mcp','hhc','sbm'), help='Name of the experiment')
+    parser.add_argument('--erase', metavar='erase', type=int, default=1, help='Set to 0 to conserve datasets.')
+    parser.add_argument('--reset', metavar='reset', type=int, default=0, help='Set to 1 to erase all memory of values computed up to now.')
     args = parser.parse_args()
-
-    RESET=args.reset
-    ERASE_DATASETS=args.erase
+    
+    RESET=bool(args.reset)
+    ERASE_DATASETS=bool(args.erase)
     PROBLEM = args.problem
 
     print(f"Working on problem '{PROBLEM}'")
