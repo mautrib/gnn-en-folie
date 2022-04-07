@@ -55,9 +55,12 @@ def get_train_value(run):
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Grid testing on the experiments from one W&B repository.')
     parser.add_argument('problem', metavar='problem', choices = ('mcp','hhc','sbm'), help='Need to choose an experiment')
+    parser.add_argument('--skip', metavar='skip', type=int, default=0, help='Number of experiments to skip')
     args = parser.parse_args()
 
+    SKIP_FIRST_N_RUNS=args.skip
     PROBLEM = args.problem
+    
     print(f"Working on problem '{PROBLEM}'")
     if PROBLEM == 'mcp':
         VALUE_NAME = 'clique_size'
@@ -73,11 +76,8 @@ if __name__=='__main__':
     else:
         raise NotImplementedError(f"Problem {PROBLEM} not implemented.")
 
-    ERASE_DATASETS = False
-    ERASE_ARTIFACTS = True
-
     #WANDB
-    WANDB_MODELS_PROJECT = f"repr_{PROBLEM}"
+    WANDB_MODELS_PROJECT = f"trained_models_{PROBLEM}"
 
     #VALUES_DEPENDING ON ABOVE
     BASE_PATH = 'scripts/'
@@ -98,7 +98,12 @@ if __name__=='__main__':
 
     test_loaders = []
 
+    if SKIP_FIRST_N_RUNS!=0: print(f'Skipping first {SKIP_FIRST_N_RUNS} runs.')
+    run_number=-1
+
     for run in tqdm.tqdm(runs, total=len(runs)):
+        run_number+=1
+        if run_number < SKIP_FIRST_N_RUNS: continue
         pl_model = load_model(run.config, run.id, add_metric=False)
         test_loaders = []
         for value in VALUES:
@@ -108,7 +113,12 @@ if __name__=='__main__':
         setup_metric(pl_model, BASE_CONFIG, istest=True)
         trainer = setup_trainer(BASE_CONFIG, pl_model, only_test=True)
         trainer.test(pl_model, dataloaders=test_loaders)
-        trainer.logger.experiment.summary['train_value'] = get_train_value(run)
-        trainer.logger.experiment.summary['values'] = [value for value in VALUES]
-        trainer.logger.experiment.summary['logged'] = trainer.logged_metrics
+        run_id = trainer.logger.experiment.id #First store the id
         wandb.finish()
+        #Update the summary after stopping the ddp experiment to prevent some trouble
+        project_path = os.path.join(BASE_CONFIG['project'] + f'_{PROBLEM}', run_id)
+        run_copy = wapi.run(project_path)
+        run_copy.summary['train_value'] = get_train_value(run)
+        run_copy.summary['values'] = [f"{value:.4f}" for value in VALUES]
+        run_copy.summary['logged'] = trainer.logged_metrics
+        run_copy.summary.update()

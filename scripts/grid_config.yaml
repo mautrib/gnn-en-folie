@@ -1,6 +1,6 @@
 ---
 project: gridtest
-device: gpu:2 #Can be 'cpu', 'gpu', 'tpu', 'ipu' (with an added ':#number of devices', default, 1 [ex: 'gpu:2]') or auto
+device: cpu:24 #Can be 'cpu', 'gpu', 'tpu', 'ipu' (with an added ':#number of devices', default, 1 [ex: 'gpu:2]') or auto
 problem: mcp
 test_enabled: Yes
 
@@ -8,7 +8,7 @@ data:
     use_maskedtensor: No
     path_dataset: datasets # Path where datasets are stored, default data/
     test: #Test data generation parameters
-        num_examples_test: 200
+        num_examples_test: 1000
         n_vertices: 100
         min_vertices: 50
         max_vertices: 100
@@ -36,7 +36,7 @@ train: # Training parameters, you can add any Pytorch Lightning Trainer Argument
     batch_size:  128
     anew: No
     default_root_dir: "observers/lightning/"
-    strategy: dp
+    strategy: ddp
 
 arch:
     embedding: edge
