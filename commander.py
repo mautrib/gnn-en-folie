@@ -25,7 +25,10 @@ def get_observer(config: dict):
     observer = config['observers']['observer']
     if observer=='wandb':
         logger = WandbLogger(project=f"{config['project']}_{config['problem']}", log_model="all", save_dir=path)
-        logger.experiment.config.update(config)
+        try:
+            logger.experiment.config.update(config)
+        except AttributeError as ae:
+            return None
     else:
         raise NotImplementedError(f"Observer {observer} not implemented.")
     return logger
@@ -70,8 +73,11 @@ def setup_trainer(config: dict, model: GNN_Abstract_Base_Class, watch=True, only
     trainer_config = get_trainer_config(config, only_test=only_test)
     if config['observers']['use']:
         logger = get_observer(config)
-        if watch: logger.watch(model)
-        trainer_config['logger'] = logger
+        if logger is None:
+            print("Logger did not load. Could mean an error or that we are not in the zero_ranked experiment.")
+        else:
+            if watch: logger.watch(model)
+            trainer_config['logger'] = logger
     trainer = pl.Trainer(**trainer_config)
     return trainer
 
