@@ -52,7 +52,7 @@ def fulledge_beamsearch(l_inferred, l_targets, l_adjacency) -> dict:
         total_count += target_clique_size
 
         size_inf += inf_clique_size
-        size_planted += target_clique_set
+        size_planted += target_clique_size
         size_error_percentage += (inf_clique_size-target_clique_size)/target_clique_size
 
     size_error_percentage/=bs
