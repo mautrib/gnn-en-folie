@@ -2,7 +2,7 @@ import yaml
 import toolbox.utils as utils
 import os
 
-from models import get_pipeline, get_pl_model, get_torch_model, get_optim_args
+from models import get_pipeline, get_pl_model, get_torch_model, get_optim_args, is_dummy
 from models.base_model import GNN_Abstract_Base_Class
 from data import get_test_dataset, get_train_val_datasets
 from metrics import setup_metric
@@ -40,20 +40,23 @@ def load_model(config: dict, path: str, add_metric=True, **add_metric_kwargs) ->
      - add_metric: bool. Adds an external metric to the pytorch lightninh module.
      - add_metric_kwargs: Arguments passed to the setup_metric function if activated.
     """
-    print(f'Loading base model from {path}... ', end = "")
-    try:
-        PL_Model_Class = get_pl_model(config)
-        pl_model = PL_Model_Class.load_from_checkpoint(path, model=get_torch_model(config), optim_args=get_optim_args(config))
-    except (FileNotFoundError) as e:
-        if config['observers']['observer']=='wandb':
-            print(f"Failed at finding model locally with error : {e}. Trying to use W&B.")
-            project = f"{config['project']}_{config['problem']}"
-            wb_config, path = wbh.download_model(project, path)
+    if is_dummy(config['arch']['name']):
+        pl_model = get_pipeline(config)
+    else:
+        print(f'Loading base model from {path}... ', end = "")
+        try:
             PL_Model_Class = get_pl_model(config)
-            pl_model = PL_Model_Class.load_from_checkpoint(path, model=get_torch_model(wb_config), optim_args=get_optim_args(wb_config))
-        else:
-            raise e
-    print('Done.')
+            pl_model = PL_Model_Class.load_from_checkpoint(path, model=get_torch_model(config), optim_args=get_optim_args(config))
+        except (FileNotFoundError) as e:
+            if config['observers']['observer']=='wandb':
+                print(f"Failed at finding model locally with error : {e}. Trying to use W&B.")
+                project = f"{config['project']}_{config['problem']}"
+                wb_config, path = wbh.download_model(project, path)
+                PL_Model_Class = get_pl_model(config)
+                pl_model = PL_Model_Class.load_from_checkpoint(path, model=get_torch_model(wb_config), optim_args=get_optim_args(wb_config))
+            else:
+                raise e
+        print('Done.')
     if add_metric:
         setup_metric(pl_model, config, **add_metric_kwargs)
     return pl_model
@@ -82,6 +85,9 @@ def setup_trainer(config: dict, model: GNN_Abstract_Base_Class, watch=True, only
     return trainer
 
 def train(config: dict)->pl.Trainer:
+    if is_dummy(config['arch']['train']):
+        print("Dummy architecture, can't train.")
+        return None
     if config['train']['anew']:
         pl_model = get_pipeline(config)
         setup_metric(pl_model, config)

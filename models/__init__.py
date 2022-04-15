@@ -4,7 +4,17 @@ from models.fgnn_edge import FGNN_Edge
 from models.fgnn_node import FGNN_Node
 from models.dgl.gatedgcn import GatedGCNNet_Edge
 from models.fgnn.fgnn import Simple_Edge_Embedding, Simple_Node_Embedding
+from models.baselines.base import Edge_NodeDegree
 import logging
+
+DUMMY_MODEL_NAMES = ('node_degree',)
+
+def is_dummy(name):
+    return name in DUMMY_MODEL_NAMES
+
+DUMMY_MODELS = {
+    'node_degree': {'edge': Edge_NodeDegree}
+}
 
 FGNN_EMBEDDING_DICT = {
     'edge': FGNN_Edge,
@@ -22,7 +32,7 @@ MODULE_DICT = {
     'gatedgcn' : {  'edge': GatedGCNNet_Edge    }
 }
 
-NOT_DGL_ARCHS = ('fgnn',)
+NOT_DGL_ARCHS = ('fgnn', )
 
 def check_dgl_compatibility(use_dgl, arch_name, dgl_check=True):
     arch_uses_dgl = not(arch_name in NOT_DGL_ARCHS)
@@ -48,6 +58,14 @@ def get_torch_model(config):
 def get_optim_args(config):
     return config['train']['optim_args']
 
+def get_dummy_pl_model(config, dgl_check=True):
+    arch_name = config['arch']['name'].lower()
+    embedding = config['arch']['embedding'].lower()
+    use_dgl = config['arch']['use_dgl']
+    check_dgl_compatibility(use_dgl, arch_name, dgl_check=dgl_check)
+    PLModel = DUMMY_MODELS[arch_name][embedding]
+    return PLModel
+
 def get_pl_model(config, dgl_check=True):
     arch_name = config['arch']['name'].lower()
     embedding = config['arch']['embedding'].lower()
@@ -59,8 +77,13 @@ def get_pl_model(config, dgl_check=True):
         PL_Model = FGNN_EMBEDDING_DICT[embedding]
     return PL_Model
 
+def get_dummy_pipeline(config, dgl_check=True):
+    batch_size = config['train']['batch_size']
+    PLModel = get_dummy_pl_model(config, dgl_check)
+    pipeline = PLModel(batch_size=batch_size)
+    return pipeline
 
-def get_pipeline(config, dgl_check=True):
+def get_gnn_pipeline(config, dgl_check=True):
     PL_Model = get_pl_model(config, dgl_check)
     
     module = get_torch_model(config)
@@ -71,6 +94,12 @@ def get_pipeline(config, dgl_check=True):
     pipeline = PL_Model(module, optim_args, batch_size=batch_size)
 
     return pipeline
+
+def get_pipeline(config, dgl_check=True):
+    if config['arch']['name'] in DUMMY_MODEL_NAMES: 
+        return get_dummy_pipeline(config, dgl_check)
+    else:
+        return get_gnn_pipeline(config, dgl_check)
 
 
 
