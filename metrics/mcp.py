@@ -60,7 +60,7 @@ def fulledge_beamsearch(l_inferred, l_targets, l_adjacency) -> dict:
     size_inf/=bs
     size_planted/=bs
     assert acc<=1, "Accuracy over 1, not normal."
-    return {'bs-accuracy': acc, 'bs-size_error_percentage': size_error_percentage, 'bs-size_inf': size_inf, 'bs-size_planted': size_planted}
+    return {'bs-accuracy': float(acc), 'bs-size_error_percentage': float(size_error_percentage), 'bs-size_inf': float(size_inf), 'bs-size_planted': float(size_planted)}
 
 def fulledge_total(l_inferred, l_targets, l_adjacency) -> dict:
     final_dict = {}

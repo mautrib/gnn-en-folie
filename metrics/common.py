@@ -23,7 +23,7 @@ def edgefeat_compute_accuracy(l_inferred, l_targets) -> dict:
         acc += true_cat/n_edges
     acc = acc/bs
     assert acc<=1, "Accuracy over 1, not normal."
-    return {'accuracy':acc}
+    return {'accuracy': float(acc)}
 
 def edgefeat_compute_f1(l_inferred, l_targets) -> dict:
     """
@@ -47,7 +47,7 @@ def edgefeat_compute_f1(l_inferred, l_targets) -> dict:
     f1 = 0
     if prec+rec!=0:
         f1 = 2*(prec*rec)/(prec+rec)
-    return {'precision':prec, 'recall':rec, 'f1':f1}
+    return {'precision': float(prec), 'recall': float(rec), 'f1': float(f1)}
 
 def edgefeat_AUC(l_inferred, l_targets) -> dict:
     """
@@ -60,7 +60,7 @@ def edgefeat_AUC(l_inferred, l_targets) -> dict:
     for inferred, target in zip(l_inferred, l_targets):
         auc += sk_metrics.roc_auc_score(target.detach().cpu().numpy(), inferred.detach().cpu().numpy())
     auc = auc/bs
-    return {'auc':auc}
+    return {'auc': float(auc)}
 
 def edgefeat_total(l_inferred, l_targets) -> dict:
     final_dict = {}
@@ -91,7 +91,7 @@ def fulledge_compute_accuracy(l_inferred, l_targets):
         acc += (torch.sum(y_onehot*cur_target) + torch.sum((1-y_onehot)*(1-cur_target)))/(n_edges)
     acc = acc/bs
     assert acc<=1, "Accuracy over 1, not normal."
-    return {'accuracy':acc}
+    return {'accuracy': float(acc)}
 
 def fulledge_compute_f1(l_inferred, l_targets):
     """
@@ -117,7 +117,7 @@ def fulledge_compute_f1(l_inferred, l_targets):
     f1 = 0
     if prec+rec!=0:
         f1 = 2*(prec*rec)/(prec+rec)
-    return {'precision':prec, 'recall':rec, 'f1':f1}
+    return {'precision': float(prec), 'recall': float(rec), 'f1': float(f1)}
         
 def fulledge_AUC(l_inferred, l_targets) -> dict:
     """
@@ -130,7 +130,7 @@ def fulledge_AUC(l_inferred, l_targets) -> dict:
     for inferred, target in zip(l_inferred, l_targets):
         auc += sk_metrics.roc_auc_score(target.detach().cpu().numpy().flatten(), inferred.detach().cpu().to(int).numpy().flatten())
     auc = auc/bs
-    return {'auc':auc}
+    return {'auc': float(auc)}
 
 def fulledge_total(l_inferred, l_targets) -> dict:
     final_dict = {}
