@@ -1,6 +1,7 @@
 ---
-project: gridtest
-device: cpu:24 #Can be 'cpu', 'gpu', 'tpu', 'ipu' (with an added ':#number of devices', default, 1 [ex: 'gpu:2]') or auto
+project: gridtest_fgnn
+wandb_source_project: trained_models # The name of the problem will be added
+device: cpu:32 #Can be 'cpu', 'gpu', 'tpu', 'ipu' (with an added ':#number of devices', default, 1 [ex: 'gpu:2]') or auto
 problem: mcp
 test_enabled: Yes
 
@@ -8,7 +9,7 @@ data:
     use_maskedtensor: No
     path_dataset: datasets # Path where datasets are stored, default data/
     test: #Test data generation parameters
-        num_examples_test: 1000
+        num_examples_test: 960 #960 so it's divisible by 16, 32, 48, 64 for DDP
         n_vertices: 100
         min_vertices: 50
         max_vertices: 100
@@ -33,7 +34,7 @@ data:
                 fill_param: 5
 
 train: # Training parameters, you can add any Pytorch Lightning Trainer Arguments and pytorch DataLoader arguments
-    batch_size:  128
+    batch_size:  30
     anew: No
     default_root_dir: "observers/lightning/"
     strategy: ddp

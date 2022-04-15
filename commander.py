@@ -92,20 +92,22 @@ def train(config: dict)->pl.Trainer:
     trainer.fit(pl_model, train_dataset, val_dataset)
     return trainer
 
-def test(config: dict, trainer=None, dataloaders=None) -> None:
+def test(config: dict, trainer=None, model=None, dataloaders=None, **kwargs) -> None:
     if dataloaders is None: dataloaders = get_test_dataset(config)
     arg_dict = {'dataloaders': dataloaders,
                 'verbose':True
     }
     if trainer is None:
-        pl_model = load_model(config, config['train']['start_model'], add_metric=False)
-        trainer = setup_trainer(config, pl_model)
+        pl_model = model
+        if pl_model is None: pl_model = load_model(config, config['train']['start_model'], add_metric=False)
+        trainer = setup_trainer(config, pl_model, **kwargs)
     else:
         arg_dict['ckpt_path'] = 'best'
         pl_model = trainer.model
     setup_metric(pl_model, config, istest=True)
     arg_dict['model'] = pl_model
     trainer.test(**arg_dict)
+    return trainer
 
 
 def main():

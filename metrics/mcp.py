@@ -39,6 +39,8 @@ def fulledge_beamsearch(l_inferred, l_targets, l_adjacency) -> dict:
 
     true_pos = 0
     total_count = 0
+    size_inf = 0
+    size_planted = 0
     size_error_percentage = 0
     for inferred_clique, target in zip(l_cliques, l_targets):
         target_degrees = target.sum(-1)
@@ -49,12 +51,16 @@ def fulledge_beamsearch(l_inferred, l_targets, l_adjacency) -> dict:
         true_pos += len(target_clique_set.intersection(inferred_clique))
         total_count += target_clique_size
 
+        size_inf += inf_clique_size
+        size_planted += target_clique_set
         size_error_percentage += (inf_clique_size-target_clique_size)/target_clique_size
 
     size_error_percentage/=bs
     acc = true_pos/total_count
+    size_inf/=bs
+    size_planted/=bs
     assert acc<=1, "Accuracy over 1, not normal."
-    return {'bs-accuracy': acc, 'bs-size_error_percentage': size_error_percentage}
+    return {'bs-accuracy': acc, 'bs-size_error_percentage': size_error_percentage, 'bs-size_inf': size_inf, 'bs-size_planted': size_planted}
 
 def fulledge_total(l_inferred, l_targets, l_adjacency) -> dict:
     final_dict = {}

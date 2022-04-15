@@ -1,6 +1,6 @@
 import pytorch_lightning as pl
 import torch.optim
-from toolbox.utils import get_lr, restrict_dict_to_function
+from toolbox.utils import get_lr
 
 class GNN_Abstract_Base_Class(pl.LightningModule):
 
@@ -41,11 +41,11 @@ class GNN_Abstract_Base_Class(pl.LightningModule):
     def log(self,name, value, batch_size=None, **kwargs): #Overload for batch_size passing in masked tensors
         if batch_size is None:
             batch_size = self.batch_size
-        super().log(name, value, batch_size=batch_size, **kwargs)
+        super().log(name, value, batch_size=batch_size,rank_zero_only=True **kwargs)
     
     def log_metric(self, prefix, sync_dist=None, **kwargs):
         if self.use_metric and self._metric_function is not None:
             value_dict = self._metric_function(**kwargs)
             if sync_dist is None:
                 sync_dist = self.sync_dist
-            self.log(f'{prefix}.metrics', value_dict, sync_dist=sync_dist)
+            self.log(f'{prefix}.metrics', value_dict, sync_dist=sync_dist, rank_zero_only=True)
