@@ -75,7 +75,7 @@ if __name__=='__main__':
     print(f"Working on problem '{PROBLEM}'")
     if PROBLEM == 'mcp':
         VALUE_NAME = 'clique_size'
-        VALUES = range(5,7)
+        VALUES = range(5,20)
     elif PROBLEM == 'sbm':
         VALUE_NAME = 'dc'
         VALUES = np.linspace(0,6,25)
