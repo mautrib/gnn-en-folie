@@ -1,7 +1,7 @@
 import os, sys
+sys.path.append(os.getcwd())
 
 from models import get_pipeline, is_dummy
-sys.path.append(os.getcwd())
 from copy import deepcopy
 import argparse
 import numpy as np
