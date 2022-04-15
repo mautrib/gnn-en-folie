@@ -41,7 +41,7 @@ class GNN_Abstract_Base_Class(pl.LightningModule):
     def log(self,name, value, batch_size=None, **kwargs): #Overload for batch_size passing in masked tensors
         if batch_size is None:
             batch_size = self.batch_size
-        super().log(name, value, batch_size=batch_size,rank_zero_only=True **kwargs)
+        super().log(name, value, batch_size=batch_size, rank_zero_only=True, **kwargs)
     
     def log_metric(self, prefix, sync_dist=None, **kwargs):
         if self.use_metric and self._metric_function is not None:
