@@ -67,8 +67,6 @@ if __name__=='__main__':
 
     #CONFIG DEPENDING
     PROBLEM = BASE_CONFIG['problem']
-    WANDB_MODELS_PROJECT = BASE_CONFIG['wandb_source_project'] + f"_{PROBLEM}"
-
     
     print(f"Working on problem '{PROBLEM}'")
     if PROBLEM == 'mcp':
