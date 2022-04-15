@@ -48,4 +48,4 @@ class GNN_Abstract_Base_Class(pl.LightningModule):
             value_dict = self._metric_function(**kwargs)
             if sync_dist is None:
                 sync_dist = self.sync_dist
-            self.log(f'{prefix}.metrics', value_dict, sync_dist=sync_dist, rank_zero_only=True)
+            self.log(f'{prefix}.metrics', value_dict, sync_dist=sync_dist)
