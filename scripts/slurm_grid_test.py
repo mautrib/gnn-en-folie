@@ -54,7 +54,7 @@ def get_train_value(run):
 
 class ExpLauncher():
     BASE_STR = 'sbatch {}/slurm_expe.batch {}'
-    TIMEOUT = 30 * 60 #30mins
+    TIMEOUT = 60 * 60 #60mins to override the expe
 
     def __init__(self, base_run, config, api_object, threadID, path, name = ''):
         super().__init__()
@@ -101,9 +101,8 @@ class ExpLauncher():
         self.already_executed = True
         self.execute_time = time.time()
     
-    def check_time(self):
-        if time.time() - self.execute_time > self.TIMEOUT:
-            self.already_executed = False
+    def override(self):
+        return time.time() - self.execute_time > self.TIMEOUT
     
     def launch_expe(self):
         self.export_config()
@@ -143,7 +142,11 @@ class ExpLauncher():
                         pass
         except Exception:
             found = True
-        if found and not self.already_executed: self.launch_expe()
+        if found:
+            if not self.already_executed: self.launch_expe()
+        else:
+            if self.override():
+                self.launch_expe()
         return False
 
 if __name__=='__main__':
