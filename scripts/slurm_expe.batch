@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#SBATCH --job-name=mcpu_grid
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=64
+#SBATCH --partition=cpu_homogen
+#SBATCH --time=7-00:00:00
+#SBATCH --output=gridcpumcp%j.out
+#SBATCH --error=gridcpumcp%j.err
+
+echo "### Running $SLURM_JOB_NAME$ ###"
+
+set -x
+cd ${SLURM_SUBMIT_DIR}
+
+path=%1
+
+module purge
+
+source /home/atriboul/.bashrc
+conda activate gnnplcpu
+
+cd /home/atriboul/phd/gnn-en-folie/
+python3 scripts/grid_test.py --expe_config "$path"
