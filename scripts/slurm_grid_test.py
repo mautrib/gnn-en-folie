@@ -95,7 +95,7 @@ class ExpLauncher():
     def run_command(self):
         cur_str = self.BASE_STR.format(self.path, self.config_filename)
         print(f"Thread {self.name} launching command '{cur_str}'", flush=True)
-        #os.system(cur_str)
+        os.system(cur_str)
         self.already_executed = True
     
     def launch_expe(self):
