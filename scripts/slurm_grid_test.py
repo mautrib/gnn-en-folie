@@ -54,6 +54,7 @@ def get_train_value(run):
 
 class ExpLauncher():
     BASE_STR = 'sbatch {}/slurm_expe.batch {}'
+    TIMEOUT = 30 * 60 #30mins
 
     def __init__(self, base_run, config, api_object, threadID, path, name = ''):
         super().__init__()
@@ -73,6 +74,7 @@ class ExpLauncher():
         self.prepare_config(config)
 
         self.already_executed = False
+        self.execute_time = 0
     
     def prepare_config(self, config):
         config = deepcopy(config)
@@ -97,6 +99,11 @@ class ExpLauncher():
         print(f"Thread {self.name} launching command '{cur_str}'", flush=True)
         os.system(cur_str)
         self.already_executed = True
+        self.execute_time = time.time()
+    
+    def check_time(self):
+        if time.time() - self.execute_time > self.TIMEOUT:
+            self.already_executed = False
     
     def launch_expe(self):
         self.export_config()
@@ -199,6 +206,7 @@ if __name__=='__main__':
             finished = thread.check_and_execute_expe()
             if finished:
                 to_remove.append(i)
+            time.sleep(10) #For the wandb api problems
         
         
         #REMOVE FINISHED ONES
