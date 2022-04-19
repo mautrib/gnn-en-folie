@@ -52,10 +52,10 @@ def get_train_value(run):
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Grid testing on the experiments from one W&B repository.')
-    parser.add_argument('--expe_config', metavar='config', type=str, help='Config path.')
+    parser.add_argument('expe_config', metavar='config', type=str, help='Config path.')
     args = parser.parse_args()
 
-    CONFIG_FILE_NAME = args.config
+    CONFIG_FILE_NAME = args.expe_config
 
     #VALUES_DEPENDING ON ABOVE
     BASE_PATH = 'scripts/'

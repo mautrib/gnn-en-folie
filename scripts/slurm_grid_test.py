@@ -53,19 +53,22 @@ def get_train_value(run):
     return value
 
 class ExpLauncher():
-    BASE_STR = 'sbatch slurm_expe.batch {}'
+    BASE_STR = 'sbatch {}/slurm_expe.batch {}'
 
     def __init__(self, base_run, config, api_object, threadID, path, name = ''):
         super().__init__()
         self.base_run = base_run
         self.train_value = get_train_value(base_run)
+        self.project = config['project'] + f"_{config['problem']}"
         self.api = api_object
         self.threadID = threadID
 
         if name=='':
             name = ''.join(random.choice(NAME_CHARS) for _ in range(10))
         self.name = name
-        self.config_filename = os.path.join(path, name + '.yaml')
+        self.path = path
+        self.config_filename = name + '.yaml'
+        self.config_fullpath = os.path.join(self.path, self.config_filename)
 
         self.prepare_config(config)
     
@@ -78,19 +81,19 @@ class ExpLauncher():
         self.config = config
 
     def export_config(self):
-        with open(self.config_filename, 'w') as f:
+        with open(self.config_fullpath, 'w') as f:
             yaml.dump(self.config, f, default_flow_style=False)
     
     def remove_files(self):
         try:
-            os.remove(self.config_filename)
+            os.remove(self.config_fullpath)
         except FileNotFoundError:
             pass
 
     def run_command(self):
-        cur_str = self.BASE_STR.format(self.config_filename)
-        print(f"Thread {self.name} launching command '{cur_str}'")
-        os.command(cur_str)
+        cur_str = self.BASE_STR.format(self.path, self.config_filename)
+        print(f"Thread {self.name} launching command '{cur_str}'", flush=True)
+        os.system(cur_str)
     
     def launch_expe(self):
         self.export_config()
@@ -98,29 +101,35 @@ class ExpLauncher():
 
     def deserves_living(self)->bool:
         """Returns True if need to do this run"""
-        runs = self.api.runs(self.repo)
-        for run in runs:
-            if run.config['train_value']==self.train_value:
-                if run.state=='failed':
-                    run.delete()
-                elif run.state=='finished':
-                    return False
-                else:
-                    if run.config['creator']!=self.name: #In case another thread works on this project
+        try:
+            runs = self.api.runs(self.project)
+            for run in runs:
+                if run.config['train_value']==self.train_value:
+                    if run.state=='failed':
+                        run.delete()
+                    elif run.state=='finished':
                         return False
+                    else:
+                        if run.config['creator']!=self.name: #In case another thread works on this project
+                            return False
+        except Exception:
+            pass
         return True
 
     def check_and_execute_expe(self) -> bool:
         """Returns True if the run was finished successfully. If it still needs to compute, returns False. If the run found with this train_value has failed, it relaunches it."""
-        runs = self.api.runs(self.repo)
-        found = False
-        for run in runs:
-            if run.config['train_value']==self.train_value:
-                found = True
-                if run.state=='failed':
-                    run.delete()
-                elif run.state=='finished':
-                    return True
+        try:
+            runs = self.api.runs(self.project)
+            found = False
+            for run in runs:
+                if run.config['train_value']==self.train_value:
+                    found = True
+                    if run.state=='failed':
+                        run.delete()
+                    elif run.state=='finished':
+                        return True
+        except Exception:
+            found = True
         if found: self.launch_expe()
         return False
 
@@ -167,6 +176,7 @@ if __name__=='__main__':
     global_thread_num = 0
     while len(done)!=len(runids):
         
+        print(f"TODO : {len(todo)}")
         #SETUP THREADS
         while (len(l_threads) < cur_thread_num) and len(todo)!=0:
             run_id = todo.pop()
@@ -186,13 +196,13 @@ if __name__=='__main__':
         
         
         #REMOVE FINISHED ONES
-        l_finished_threads = [thread for i, thread in l_threads if (i in to_remove)]
+        l_finished_threads = [thread for i, thread in enumerate(l_threads) if (i in to_remove)]
         for thread in l_finished_threads:
             thread.remove_files()
             print(f"Finished thread {thread.name}, train value {thread.train_value}")
             done.append(thread.base_run.id)
 
-        l_threads = [thread for i, thread in l_threads if (not i in to_remove)]
+        l_threads = [thread for i, thread in enumerate(l_threads) if (not i in to_remove)]
 
         #Wait
         time.sleep(SLEEP_TIME * 60)

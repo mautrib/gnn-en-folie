@@ -13,12 +13,10 @@ echo "### Running $SLURM_JOB_NAME$ ###"
 set -x
 cd ${SLURM_SUBMIT_DIR}
 
-path=%1
-
 module purge
 
 source /home/atriboul/.bashrc
 conda activate gnnplcpu
 
 cd /home/atriboul/phd/gnn-en-folie/
-python3 scripts/grid_test.py --expe_config "$path"
+python3 scripts/slurm_expe.py "$1"
