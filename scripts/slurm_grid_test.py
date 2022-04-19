@@ -80,6 +80,12 @@ class ExpLauncher():
     def export_config(self):
         with open(self.config_filename, 'w') as f:
             yaml.dump(self.config, f, default_flow_style=False)
+    
+    def remove_files(self):
+        try:
+            os.remove(self.config_filename)
+        except FileNotFoundError:
+            pass
 
     def run_command(self):
         cur_str = self.BASE_STR.format(self.config_filename)
@@ -182,6 +188,7 @@ if __name__=='__main__':
         #REMOVE FINISHED ONES
         l_finished_threads = [thread for i, thread in l_threads if (i in to_remove)]
         for thread in l_finished_threads:
+            thread.remove_files()
             print(f"Finished thread {thread.name}, train value {thread.train_value}")
             done.append(thread.base_run.id)
 
