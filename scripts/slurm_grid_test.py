@@ -67,10 +67,12 @@ class ExpLauncher():
             name = ''.join(random.choice(NAME_CHARS) for _ in range(10))
         self.name = name
         self.path = path
-        self.config_filename = name + '.yaml'
+        self.config_filename = '_temp-' + name + '.yaml'
         self.config_fullpath = os.path.join(self.path, self.config_filename)
 
         self.prepare_config(config)
+
+        self.already_executed = False
     
     def prepare_config(self, config):
         config = deepcopy(config)
@@ -93,7 +95,8 @@ class ExpLauncher():
     def run_command(self):
         cur_str = self.BASE_STR.format(self.path, self.config_filename)
         print(f"Thread {self.name} launching command '{cur_str}'", flush=True)
-        os.system(cur_str)
+        #os.system(cur_str)
+        self.already_executed = True
     
     def launch_expe(self):
         self.export_config()
@@ -126,11 +129,14 @@ class ExpLauncher():
                     found = True
                     if run.state=='failed':
                         run.delete()
+                        self.already_executed = False
                     elif run.state=='finished':
                         return True
+                    elif run.state=='running':
+                        pass
         except Exception:
             found = True
-        if found: self.launch_expe()
+        if found and not self.already_executed: self.launch_expe()
         return False
 
 if __name__=='__main__':
