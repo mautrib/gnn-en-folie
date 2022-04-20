@@ -28,9 +28,9 @@ def get_trainval_edgefeat_metric(problem):
     elif problem=='mcp':
         return edgefeat_compute_f1
     elif problem=='hhc':
-        raise edgefeat_compute_f1
+        return edgefeat_compute_f1
     elif problem=='sbm':
-        raise edgefeat_compute_f1
+        return edgefeat_compute_f1
     else:
         raise NotImplementedError(f"Train/val metric for edge problem {problem} has not been implemented.")
 
