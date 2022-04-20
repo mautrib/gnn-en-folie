@@ -146,8 +146,9 @@ class MCP_Generator_True(Base_Generator):
         self.n_threads = args.get('n_threads', 24)
         num_examples = args['num_examples_' + name]
         self.n_vertices = args['n_vertices']
-        subfolder_name = 'MCPTrue_{}_{}_{}'.format(num_examples,
+        subfolder_name = 'MCPTrue_{}_{}_{}_{}'.format(num_examples,
                                                            self.n_vertices, 
+                                                           self.clique_size,
                                                            self.edge_density)
         path_dataset = os.path.join(args['path_dataset'], 'mcptrue',
                                          subfolder_name)
@@ -175,6 +176,8 @@ class MCP_Generator_True(Base_Generator):
         except KeyError:
             raise ValueError('Generative model {} not supported'
                              .format(self.generative_model))
+        assert isinstance(self.clique_size, int), f"Clique size is not an int {self.clique_size=}"
+        W, K = MCP_Generator.add_clique(W, self.clique_size)
         return W
     
     @classmethod
