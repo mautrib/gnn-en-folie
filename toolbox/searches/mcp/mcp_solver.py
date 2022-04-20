@@ -106,7 +106,16 @@ class MCP_Solver():
         exp_name = ''.join(random.choice(NAME_CHARS) for _ in range(10))
 
         solo = False
-        adjs = self.adjs.detach().clone()
+        if isinstance(self.adjs, torch.Tensor):
+            adjs = self.adjs.detach().clone()
+        elif isinstance(self.adjs, list):
+            bs = len(self.adjs)
+            adj_shape = self.adjs[0].shape
+            adjs = torch.zeros((bs,)+adj_shape)
+            for i in range(bs):
+                adjs[i] = self.adjs[i]
+        else:
+            adjs = self.adjs
         if len(adjs.shape)==2:
             solo = True
             adjs = adjs.unsqueeze(0)

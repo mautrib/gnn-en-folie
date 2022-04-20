@@ -166,7 +166,7 @@ class MCP_Generator_True(Base_Generator):
         solver.solve()
         clique_solutions = solver.solutions
         l_b = [adjacency_matrix_to_tensor_representation(W) for W in l_adjacency]
-        l_k = [MCP_Generator.mcp_ind_to_adj(elt) for elt in clique_solutions]
+        l_k = [MCP_Generator.mcp_ind_to_adj(elt, self.n_vertices) for elt in clique_solutions]
         l_data = [(B,K) for (B,K) in zip(l_b,l_k)]
         return l_data
 

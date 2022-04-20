@@ -30,7 +30,7 @@ def get_generator_class(problem_key):
     elif problem_key == 'mcp':
         Generator_Class = MCP_Generator
     elif problem_key == 'mcptrue':
-        Generator_Class == MCP_Generator_True
+        Generator_Class = MCP_Generator_True
     elif problem_key == 'sbm':
         Generator_Class = SBM_Generator
     elif problem_key == 'hhc':
