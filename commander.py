@@ -85,7 +85,7 @@ def setup_trainer(config: dict, model: GNN_Abstract_Base_Class, watch=True, only
     return trainer
 
 def train(config: dict)->pl.Trainer:
-    if is_dummy(config['arch']['train']):
+    if is_dummy(config['arch']['name']):
         print("Dummy architecture, can't train.")
         return None
     if config['train']['anew']:
