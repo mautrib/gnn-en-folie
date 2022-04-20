@@ -5,7 +5,7 @@ import toolbox.maskedtensor as maskedtensor
 import logging
 
 from data.tsp import TSP_Generator
-from data.mcp import MCP_Generator
+from data.mcp import MCP_Generator, MCP_Generator_True
 from data.sbm import SBM_Generator
 from data.hhc import HHC_Generator
 from data.masked_generators.tsp import TSP_MT_Generator
@@ -29,6 +29,8 @@ def get_generator_class(problem_key):
         Generator_Class = TSP_BGNN_Generator
     elif problem_key == 'mcp':
         Generator_Class = MCP_Generator
+    elif problem_key == 'mcptrue':
+        Generator_Class == MCP_Generator_True
     elif problem_key == 'sbm':
         Generator_Class = SBM_Generator
     elif problem_key == 'hhc':
