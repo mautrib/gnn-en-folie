@@ -145,6 +145,7 @@ class MCP_Generator_True(Base_Generator):
         self.clique_size = int(args['clique_size'])
         self.n_threads = args.get('n_threads', 24)
         num_examples = args['num_examples_' + name]
+        self.num_examples = num_examples
         self.n_vertices = args['n_vertices']
         subfolder_name = 'MCPTrue_{}_{}_{}_{}'.format(num_examples,
                                                            self.n_vertices, 
@@ -164,6 +165,7 @@ class MCP_Generator_True(Base_Generator):
             l_adjacency.append(adj)
         solver = MCP_Solver(l_adjacency, max_threads=self.n_threads)
         solver.solve()
+        assert len(solver.solutions)==self.num_examples, "Error somewhere in MCP solver."
         clique_solutions = [solution[0] for solution in solver.solutions]
         l_b = [adjacency_matrix_to_tensor_representation(W) for W in l_adjacency]
         l_k = [MCP_Generator.mcp_ind_to_adj(elt, self.n_vertices) for elt in clique_solutions]
