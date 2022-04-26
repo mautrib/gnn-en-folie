@@ -26,7 +26,7 @@ def edgefeat_total(l_inferred, l_targets, l_adjacency) -> dict:
     return final_dict
 
 ###FULLEDGE
-def fulledge_beamsearch(l_inferred, l_targets, l_adjacency) -> dict:
+def fulledge_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suffix='') -> dict:
     """
      - l_inferred : list of tensor of shape (N_i,N_i)
      - l_targets : list of tensors of shape (N_i,N_i)
@@ -35,7 +35,7 @@ def fulledge_beamsearch(l_inferred, l_targets, l_adjacency) -> dict:
     assert len(l_inferred)==len(l_targets)==len(l_adjacency), f"Size of inferred, target and ajacency different : {len(l_inferred)}, {len(l_targets)} and {len(l_adjacency)}."
     bs = len(l_inferred)
 
-    l_cliques = mcp_beam_method(l_adjacency, l_inferred, normalize=False)
+    l_cliques = mcp_beam_method(l_adjacency, l_inferred, normalize=False, beam_size=beam_size)
 
     true_pos = 0
     total_count = 0
@@ -60,10 +60,13 @@ def fulledge_beamsearch(l_inferred, l_targets, l_adjacency) -> dict:
     size_inf/=bs
     size_planted/=bs
     assert acc<=1, "Accuracy over 1, not normal."
-    return {'bs-accuracy': float(acc), 'bs-size_error_percentage': float(size_error_percentage), 'bs-size_inf': float(size_inf), 'bs-size_planted': float(size_planted)}
+    if suffix:
+        suffix = '-' + suffix
+    return {f'bs{suffix}-accuracy': float(acc), f'bs{suffix}-size_error_percentage': float(size_error_percentage), f'bs{suffix}-size_inf': float(size_inf), f'bs{suffix}-size_planted': float(size_planted)}
 
 def fulledge_total(l_inferred, l_targets, l_adjacency) -> dict:
     final_dict = {}
     final_dict.update(common_fulledge_total(l_inferred, l_targets))
-    final_dict.update(fulledge_beamsearch(l_inferred, l_targets, l_adjacency))
+    final_dict.update(fulledge_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suffix='1280'))
+    final_dict.update(fulledge_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=500, suffix='500'))
     return final_dict
