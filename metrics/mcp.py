@@ -24,6 +24,7 @@ def edgefeat_total(l_inferred, l_targets, l_adjacency) -> dict:
     final_dict.update(common_edgefeat_total(l_inferred, l_targets))
     final_dict.update(edgefeat_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suffix='1280'))
     final_dict.update(edgefeat_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=500, suffix='500'))
+    final_dict.update(edgefeat_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=100, suffix='100'))
     return final_dict
 
 ###FULLEDGE
@@ -70,4 +71,5 @@ def fulledge_total(l_inferred, l_targets, l_adjacency) -> dict:
     final_dict.update(common_fulledge_total(l_inferred, l_targets))
     final_dict.update(fulledge_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suffix='1280'))
     final_dict.update(fulledge_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=500, suffix='500'))
+    final_dict.update(fulledge_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=100, suffix='100'))
     return final_dict
