@@ -5,7 +5,7 @@ from toolbox.searches.mcp import mcp_beam_method
 from metrics.common import edgefeat_total as common_edgefeat_total, fulledge_total as common_fulledge_total
 
 ###EDGEFEAT
-def edgefeat_beamsearch(l_inferred, l_targets, l_adjacency) -> dict:
+def edgefeat_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suffix='') -> dict:
     """
      - l_inferred : list of tensor of shape (N_edges_i)
      - l_targets : list of tensors of shape (N_edges_i) (For DGL, from target.edata['solution'], for FGNN, converted)
@@ -17,12 +17,13 @@ def edgefeat_beamsearch(l_inferred, l_targets, l_adjacency) -> dict:
     full_target = [edge_format_to_dense_tensor(target,graph) for target,graph in zip(l_targets, l_dgl)]
     full_adjacency = [dgl_dense_adjacency(graph) for graph in l_dgl]
 
-    return fulledge_beamsearch(full_inferred, full_target, full_adjacency)
+    return fulledge_beamsearch(full_inferred, full_target, full_adjacency, beam_size=beam_size, suffix=suffix)
 
 def edgefeat_total(l_inferred, l_targets, l_adjacency) -> dict:
     final_dict = {}
     final_dict.update(common_edgefeat_total(l_inferred, l_targets))
-    final_dict.update(edgefeat_beamsearch(l_inferred, l_targets, l_adjacency))
+    final_dict.update(edgefeat_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suffix='1280'))
+    final_dict.update(edgefeat_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=500, suffix='500'))
     return final_dict
 
 ###FULLEDGE
