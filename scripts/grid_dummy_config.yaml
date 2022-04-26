@@ -1,7 +1,7 @@
 ---
 project: gridtest_dummy
-device: cpu:32 #Can be 'cpu', 'gpu', 'tpu', 'ipu' (with an added ':#number of devices', default, 1 [ex: 'gpu:2]') or auto
-problem: mcp
+device: cpu:8 #Can be 'cpu', 'gpu', 'tpu', 'ipu' (with an added ':#number of devices', default, 1 [ex: 'gpu:2]') or auto
+problem: mcptrue
 test_enabled: Yes
 
 data:
@@ -23,6 +23,9 @@ data:
             mcp:
                 edge_density: 0.5
                 clique_size: 20 #To not plant a clique, use 0
+            mcptrue:
+                edge_density: 0.5
+                n_threads: 4
             sbm:
                 p_inter : 0.9
                 p_outer : 0.1
@@ -34,7 +37,7 @@ data:
 
 train: # Training parameters, you can add any Pytorch Lightning Trainer Arguments and pytorch DataLoader arguments
     batch_size:  30
-    anew: No
+    anew: Yes
     default_root_dir: "observers/lightning/"
     strategy: ddp
 
@@ -42,6 +45,7 @@ arch:
     name: node_degree
     embedding: edge
     eval: edge
+    use_dgl: Yes
 
 observers:
     use: Yes

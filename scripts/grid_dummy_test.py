@@ -19,7 +19,7 @@ def get_config_specific(value, config=None):
         p_outer = C+value/2
         config['data']['test']['problems'][PROBLEM]['p_inter'] = p_inter
         config['data']['test']['problems'][PROBLEM]['p_outer'] = p_outer
-    elif PROBLEM in ('mcp', 'hhc'):
+    elif PROBLEM in ('mcp', 'mcptrue', 'hhc'):
         config['data']['test']['problems'][PROBLEM][VALUE_NAME] = value
     else:
         raise NotImplementedError(f'Problem {PROBLEM} config modification not implemented.')
@@ -48,6 +48,8 @@ def get_train_value(run):
         value = p_outer-p_inter
     elif PROBLEM in ('mcp', 'hhc'):
         value = config['data']['train']['problems'][PROBLEM][VALUE_NAME]
+    elif PROBLEM == 'mcptrue':
+        value = config['data']['train']['problems']['mcp'][VALUE_NAME]
     else:
         raise NotImplementedError(f'Problem {PROBLEM} config modification not implemented.')
     return value
@@ -69,7 +71,7 @@ if __name__=='__main__':
     PROBLEM = BASE_CONFIG['problem']
     
     print(f"Working on problem '{PROBLEM}'")
-    if PROBLEM == 'mcp':
+    if PROBLEM in ('mcp', 'mcptrue'):
         VALUE_NAME = 'clique_size'
         VALUES = range(5,20)
     elif PROBLEM == 'sbm':
@@ -95,7 +97,6 @@ if __name__=='__main__':
 
     pl_model = get_pipeline(BASE_CONFIG)
 
-    test_loaders = []
     setup_metric(pl_model, BASE_CONFIG, istest=True)
     trainer = setup_trainer(BASE_CONFIG, pl_model, watch=False, only_test=True)
     print(f"Now testing dummy")

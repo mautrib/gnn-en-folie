@@ -17,7 +17,7 @@ def get_trainval_fulledge_metric(problem):
         raise NotImplementedError(f"Train/val metric for fulledge problem {problem} has not been implemented.")
 
 def get_test_fulledge_metric(problem):
-    if problem=='mcp':
+    if problem in ('mcp', 'mcptrue'):
         return mcp_fulledge_total
     else:
         raise NotImplementedError(f"Test metric for fulledge problem {problem} has not been implemented.")
@@ -35,7 +35,7 @@ def get_trainval_edgefeat_metric(problem):
         raise NotImplementedError(f"Train/val metric for edge problem {problem} has not been implemented.")
 
 def get_test_edgefeat_metric(problem):
-    if problem=='mcp':
+    if problem in ('mcp', 'mcptrue'):
         return mcp_edgefeat_total
     else:
         raise NotImplementedError(f"Test metric for edge problem {problem} has not been implemented.")
@@ -73,12 +73,12 @@ def get_preprocessing(embed, eval, problem):
         if eval=='edge':
             if problem=='tsp':
                 return tsp_edgefeat_converter_sparsify
-            elif problem in ('mcp','sbm'):
+            elif problem in ('mcp', 'mcptrue', 'sbm'):
                 return edgefeat_converter
             else:
                 raise NotImplementedError(f"Preprocessing for {embed=}, {eval=}, {problem=} not implemented")
         elif eval=='fulledge':
-            if problem in ('mcp','sbm','tsp'):
+            if problem in ('mcp','mcptrue', 'sbm','tsp'):
                 return fulledge_converter
             else:
                 raise NotImplementedError(f"Preprocessing for {embed=}, {eval=}, {problem=} not implemented")

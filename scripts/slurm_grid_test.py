@@ -19,7 +19,7 @@ def get_config_specific(value, config=None):
         p_outer = C+value/2
         config['data']['test']['problems'][PROBLEM]['p_inter'] = p_inter
         config['data']['test']['problems'][PROBLEM]['p_outer'] = p_outer
-    elif PROBLEM in ('mcp', 'hhc'):
+    elif PROBLEM in ('mcp', 'mcptrue', 'hhc'):
         config['data']['test']['problems'][PROBLEM][VALUE_NAME] = value
     else:
         raise NotImplementedError(f'Problem {PROBLEM} config modification not implemented.')
@@ -48,13 +48,15 @@ def get_train_value(run):
         value = p_outer-p_inter
     elif PROBLEM in ('mcp', 'hhc'):
         value = config['data']['train']['problems'][PROBLEM][VALUE_NAME]
+    elif PROBLEM == 'mcptrue':
+        value = config['data']['train']['problems']['mcp'][VALUE_NAME]
     else:
         raise NotImplementedError(f'Problem {PROBLEM} config modification not implemented.')
     return value
 
 class ExpLauncher():
     BASE_STR = 'sbatch {}/slurm_expe.batch {}'
-    TIMEOUT = 60 * 60 #60mins to override the expe
+    TIMEOUT = 60 * 60 #1*60mins to override the expe
 
     def __init__(self, base_run, config, api_object, threadID, path, name = ''):
         super().__init__()
@@ -111,10 +113,10 @@ class ExpLauncher():
     def deserves_living(self)->bool:
         """Returns True if need to do this run"""
         try:
-            runs = self.api.runs(self.project)
+            runs = wandb.Api().runs(self.project)
             for run in runs:
                 if run.config['train_value']==self.train_value:
-                    if run.state=='failed':
+                    if run.state=='failed' or run.state=='crashed':
                         run.delete()
                     elif run.state=='finished':
                         return False
@@ -128,12 +130,12 @@ class ExpLauncher():
     def check_and_execute_expe(self) -> bool:
         """Returns True if the run was finished successfully. If it still needs to compute, returns False. If the run found with this train_value has failed, it relaunches it."""
         try:
-            runs = self.api.runs(self.project)
+            runs = wandb.Api().runs(self.project)
             found = False
             for run in runs:
                 if run.config['train_value']==self.train_value:
                     found = True
-                    if run.state=='failed':
+                    if run.state=='failed' or run.state=='crashed':
                         run.delete()
                         self.already_executed = False
                     elif run.state=='finished':
@@ -159,12 +161,12 @@ if __name__=='__main__':
 
     #CONFIG DEPENDING
     PROBLEM = BASE_CONFIG['problem']
-    WANDB_MODELS_PROJECT = BASE_CONFIG['wandb_source_project'] + f"_{PROBLEM}"
+    WANDB_MODELS_PROJECT = BASE_CONFIG['wandb_source_project']
     NUM_TASKS = BASE_CONFIG['num_tasks']
     SLEEP_TIME = BASE_CONFIG['sleep_time']
 
     print(f"Working on problem '{PROBLEM}'")
-    if PROBLEM == 'mcp':
+    if PROBLEM == 'mcp' or PROBLEM == 'mcptrue':
         VALUE_NAME = 'clique_size'
         VALUES = range(5,20)
     elif PROBLEM == 'sbm':
@@ -177,6 +179,9 @@ if __name__=='__main__':
         VALUES = np.sqrt(l_musquare)
     else:
         raise NotImplementedError(f"Problem {PROBLEM} not implemented.")
+    print(f"Source project : {WANDB_MODELS_PROJECT}")
+    print(f"Dest project : {BASE_CONFIG['project']+f'_{PROBLEM}'}")
+
 
     l_threads = []
 
@@ -192,9 +197,9 @@ if __name__=='__main__':
     global_thread_num = 0
     while len(done)!=len(runids):
         
-        print(f"TODO : {len(todo)}")
+        print(f"TODO : {len(todo)}", end='')
         #SETUP THREADS
-        while (len(l_threads) < cur_thread_num) and len(todo)!=0:
+        while (len(l_threads) < NUM_TASKS) and len(todo)!=0:
             run_id = todo.pop()
             run = wapi.run(os.path.join(WANDB_MODELS_PROJECT, run_id))
             thread = ExpLauncher(run, BASE_CONFIG, wapi, global_thread_num, BASE_PATH)
@@ -202,6 +207,7 @@ if __name__=='__main__':
             if not thread.deserves_living():
                 l_threads.pop()
                 done.append(run_id)
+        print(f'-->{len(todo)}')
         
         #EXECUTE THREADS
         to_remove = []
@@ -218,11 +224,12 @@ if __name__=='__main__':
             thread.remove_files()
             print(f"Finished thread {thread.name}, train value {thread.train_value}")
             done.append(thread.base_run.id)
-
         l_threads = [thread for i, thread in enumerate(l_threads) if (not i in to_remove)]
 
         #Wait
+        print('Waiting... ', end='')
         time.sleep(SLEEP_TIME * 60)
+        print('Done.')
 
 
             
