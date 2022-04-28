@@ -3,7 +3,7 @@ import torch
 import dgl
 from data.base import Base_Generator
 from toolbox import utils
-from toolbox.conversions import dense_tensor_to_edge_format, sparsify_adjacency
+from toolbox.conversions import connectivity_to_dgl, dense_tensor_to_edge_format, sparsify_adjacency
 import math
 import random
 import networkx
@@ -174,6 +174,7 @@ class TSP_Generator(Base_Generator):
             prec = curr
         
         self.positions.append((xs,ys))
+        SOL = self._solution_conversion(SOL, connectivity_to_dgl(B, sparsify=self.sparsify))
         return (B, SOL)
     
     @staticmethod

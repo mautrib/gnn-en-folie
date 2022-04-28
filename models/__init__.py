@@ -2,7 +2,7 @@ from models.dgl_edge import DGL_Edge
 from models.dgl_node import DGL_Node
 from models.fgnn_edge import FGNN_Edge
 from models.fgnn_node import FGNN_Node
-from models.dgl.gatedgcn import GatedGCNNet_Edge
+from models.dgl.gatedgcn import GatedGCNNet_Edge, GatedGCNNet_Node
 from models.fgnn.fgnn import Simple_Edge_Embedding, Simple_Node_Embedding
 from models.baselines.base import Edge_NodeDegree
 import logging
@@ -29,7 +29,8 @@ DGL_EMBEDDING_DICT = {
 MODULE_DICT = {
     'fgnn' : {  'edge': Simple_Edge_Embedding,
                 'node': Simple_Node_Embedding   },
-    'gatedgcn' : {  'edge': GatedGCNNet_Edge    }
+    'gatedgcn' : {  'edge': GatedGCNNet_Edge,
+                    'node': GatedGCNNet_Node    }
 }
 
 NOT_DGL_ARCHS = ('fgnn', )

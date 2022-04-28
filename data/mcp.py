@@ -1,6 +1,6 @@
 from data.base import Base_Generator
 from data.graph_generation import GENERATOR_FUNCTIONS
-from toolbox.conversions import adjacency_matrix_to_tensor_representation, dense_tensor_to_edge_format
+from toolbox.conversions import adjacency_matrix_to_tensor_representation, connectivity_to_dgl, dense_tensor_to_edge_format
 from toolbox.searches.mcp import mcp_beam_method
 import torch
 import os
@@ -71,6 +71,7 @@ class MCP_Generator(Base_Generator):
         else:
             B,K = self._plant_clique(W)
         K = K.to(int)
+        K = self._solution_conversion(K, connectivity_to_dgl(B))
         return (B,K)
     
     @classmethod
@@ -169,7 +170,8 @@ class MCP_Generator_True(Base_Generator):
         clique_solutions = [solution[0] for solution in solver.solutions]
         l_b = [adjacency_matrix_to_tensor_representation(W) for W in l_adjacency]
         l_k = [MCP_Generator.mcp_ind_to_adj(elt, self.n_vertices) for elt in clique_solutions]
-        l_data = [(B,K.to(int)) for (B,K) in zip(l_b,l_k)]
+        l_k = [self._solution_conversion(K.to(int), connectivity_to_dgl(B)) for (B,K) in zip(l_b,l_k)]
+        l_data = [(B,K) for (B,K) in zip(l_b,l_k)]
         return l_data
 
     def compute_example(self):

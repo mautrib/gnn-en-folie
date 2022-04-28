@@ -1,5 +1,5 @@
-from metrics.preprocess import edgefeat_converter, fulledge_converter
-from metrics.common import fulledge_compute_f1, edgefeat_compute_f1
+from metrics.preprocess import edgefeat_converter, fulledge_converter, node_converter
+from metrics.common import fulledge_compute_f1, edgefeat_compute_f1, node_compute_f1, node_total
 from metrics.mcp import fulledge_total as mcp_fulledge_total, edgefeat_total as mcp_edgefeat_total
 from metrics.tsp import tsp_edgefeat_converter_sparsify, tsp_fulledge_compute_f1
 from models.base_model import GNN_Abstract_Base_Class
@@ -41,10 +41,18 @@ def get_test_edgefeat_metric(problem):
         raise NotImplementedError(f"Test metric for edge problem {problem} has not been implemented.")
 
 def get_trainval_node_metric(problem):
-    raise NotImplementedError()
+    if problem in ('mcp', 'mcptrue'):
+        return node_compute_f1
+    elif problem == 'sbm':
+        return node_compute_f1
+    raise NotImplementedError(f"Train/val metric for node problem {problem} has not been implemented.")
 
 def get_test_node_metric(problem):
-    raise NotImplementedError()
+    if problem in ('mcp', 'mcptrue'):
+        return node_total
+    elif problem == 'sbm':
+        return node_total
+    raise NotImplementedError(f"Test metric for node problem {problem} has not been implemented.")
 
 def get_trainval_metric(eval, problem):
     if eval=='edge':
@@ -73,13 +81,21 @@ def get_preprocessing(embed, eval, problem):
         if eval=='edge':
             if problem=='tsp':
                 return tsp_edgefeat_converter_sparsify
-            elif problem in ('mcp', 'mcptrue', 'sbm'):
+            elif problem in ('mcp', 'mcptrue', 'sbm', 'hhc'):
                 return edgefeat_converter
             else:
                 raise NotImplementedError(f"Preprocessing for {embed=}, {eval=}, {problem=} not implemented")
         elif eval=='fulledge':
             if problem in ('mcp','mcptrue', 'sbm','tsp'):
                 return fulledge_converter
+            else:
+                raise NotImplementedError(f"Preprocessing for {embed=}, {eval=}, {problem=} not implemented")
+        else:
+            raise NotImplementedError(f"Unknown eval '{eval}' for embedding type 'edge'.")
+    elif embed=='node':
+        if eval=='node':
+            if problem in ('mcp','mcptrue', 'sbm','tsp'):
+                return node_converter
             else:
                 raise NotImplementedError(f"Preprocessing for {embed=}, {eval=}, {problem=} not implemented")
         else:
@@ -134,7 +150,7 @@ def setup_test_metric(pl_model: GNN_Abstract_Base_Class, config: dict)-> None:
     metric_fn = assemble_metric_function(preprocess_function=preprocess_function, eval_function=eval_fn, preprocess_additional_args=preprocess_additional_args)
     pl_model.attach_metric_function(metric_fn, start_using_metric=True)
 
-def setup_metric(pl_model: GNN_Abstract_Base_Class, config: dict, soft=True, istest=False) -> None:
+def setup_metric(pl_model: GNN_Abstract_Base_Class, config: dict, soft=False, istest=False) -> None:
     """
     Attaches a metric to the Pytorch Lightning model. This metric can be different in train_val and test cases.
     If the metric in test hasn't been implemented, it will try to use the train_val one.

@@ -3,7 +3,7 @@ from toolbox import utils
 import torch
 import os
 import dgl
-from toolbox.conversions import adjacency_matrix_to_tensor_representation, dense_tensor_to_edge_format
+from toolbox.conversions import adjacency_matrix_to_tensor_representation, connectivity_to_dgl, dense_tensor_to_edge_format
 
 class SBM_Generator(Base_Generator):
     def __init__(self, name, args):
@@ -59,6 +59,8 @@ class SBM_Generator(Base_Generator):
         K[n_sub_a:,n_sub_a:] = 1
         #K,adj = utils.permute_adjacency_twin(K,adj)
         B = adjacency_matrix_to_tensor_representation(adj)
+        
+        K = self._solution_conversion(K, connectivity_to_dgl(B))
         return (B, K)
     
     @classmethod

@@ -144,6 +144,7 @@ def tsp_edgefeat_converter_sparsify(raw_scores, target, data=None, sparsify=None
         unbatched_graphs = dgl.unbatch(target)
         l_inferred = [graph.edata['inferred'] for graph in unbatched_graphs]
         l_target = [graph.edata['solution'].squeeze() for graph in unbatched_graphs]
+        l_adjacency = [graph.edges() for graph in unbatched_graphs]
     else:
         assert data is not None, "No data, can't find distances"
         assert data.ndim==4, "Data not recognized"
@@ -153,7 +154,7 @@ def tsp_edgefeat_converter_sparsify(raw_scores, target, data=None, sparsify=None
             l_adjacencies = [adj for adj in adjacencies]
         else:
             l_adjacencies = [sparsify_adjacency(adj, sparsify, distance) for (adj,distance) in zip(adjacencies, distances)]
-        l_srcdst = [(torch.where(adj>0)) for adj in l_adjacencies]
-        l_inferred = [ graph[src,dst] for (graph,(src,dst)) in zip(raw_scores,l_srcdst)]
-        l_target = [ graph[src,dst] for (graph,(src,dst)) in zip(target,l_srcdst)]
-    return l_inferred, l_target
+        l_adjacency = [(torch.where(adj>0)) for adj in l_adjacencies]
+        l_inferred = [ graph[src,dst] for (graph,(src,dst)) in zip(raw_scores,l_adjacency)]
+        l_target = [ graph[src,dst] for (graph,(src,dst)) in zip(target,l_adjacency)]
+    return l_inferred, l_target, l_adjacency

@@ -134,6 +134,44 @@ class GatedGCNLayerIsotropic(nn.Module):
                                              self.in_channels,
                                              self.out_channels)
 
+class GatedGCNNet_Node(nn.Module):
+    
+    def __init__(self, n_layers=4, in_dim=1, in_dim_edge=1, hidden_dim=20, n_classes=2):
+        super().__init__()
+        out_dim = hidden_dim
+        dropout = 0
+
+        self.batch_norm = True #net_params['batch_norm']
+        self.residual = True
+        self.n_classes = n_classes
+        
+        self.embedding_h = nn.Linear(in_dim, hidden_dim)
+        self.embedding_e = nn.Linear(in_dim_edge, hidden_dim)
+        self.layers = nn.ModuleList([ GatedGCNLayer(hidden_dim, hidden_dim, dropout,
+                                                      self.batch_norm, self.residual) for _ in range(n_layers-1) ]) 
+        self.layers.append(GatedGCNLayer(hidden_dim, out_dim, dropout, self.batch_norm, self.residual))
+        self.MLP_layer = MLPReadout(out_dim, n_classes)
+        
+    def forward(self, g, h = None, e = None):
+        if h is None:
+            h = g.ndata['feat']
+        h = self.embedding_h(h.float())
+        if e is None:
+            if 'feat' in g.edata:
+                e = g.edata['feat']
+            else:
+                e = torch.ones((g.number_of_edges(),1)).type_as(h)
+        e = self.embedding_e(e.float())
+        
+        # convnets
+        for conv in self.layers:
+            h, e = conv(g, h, e)
+        
+        # output
+        h_out = self.MLP_layer(h)
+
+        return h_out
+
 class GatedGCNNet_Edge(nn.Module):
     
     def __init__(self, n_layers=4, in_dim=1, in_dim_edge=1, hidden_dim=20, n_classes=2):

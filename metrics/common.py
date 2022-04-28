@@ -138,3 +138,37 @@ def fulledge_total(l_inferred, l_targets) -> dict:
     final_dict.update(fulledge_compute_accuracy(l_inferred, l_targets))
     final_dict.update(fulledge_compute_f1(l_inferred, l_targets))
     return final_dict
+
+### NODE
+
+def node_compute_accuracy(l_inferred, l_targets) -> dict:
+    """
+     - l_inferred : list of tensors of shape (N_nodes_i)
+     - l_targets  : list of tensors of shape (N_nodes_i)
+    """
+    return edgefeat_compute_accuracy(l_inferred, l_targets)
+
+def node_compute_f1(l_inferred, l_targets) -> dict:
+    """
+     - l_inferred : list of tensors of shape (N_nodes_i)
+     - l_targets  : list of tensors of shape (N_nodes_i)
+    """
+    return edgefeat_compute_f1(l_inferred, l_targets)
+
+def node_AUC(l_inferred, l_targets) -> dict:
+    """
+     - l_inferred : list of tensors of shape (N_nodes_i)
+     - l_targets  : list of tensors of shape (N_nodes_i)
+    """
+    return edgefeat_AUC(l_inferred, l_targets)
+
+def node_total(l_inferred, l_targets) -> dict:
+    final_dict = {}
+    final_dict.update(node_AUC(l_inferred, l_targets))
+    final_dict.update(node_compute_accuracy(l_inferred, l_targets))
+    final_dict.update(node_compute_f1(l_inferred, l_targets))
+    return final_dict
+
+
+
+

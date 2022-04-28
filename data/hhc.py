@@ -4,7 +4,7 @@ import os
 import torch
 from numpy.random import default_rng
 import dgl
-from toolbox.conversions import dense_tensor_to_edge_format
+from toolbox.conversions import connectivity_to_dgl, dense_tensor_to_edge_format
 
 rng = default_rng(41)
 
@@ -90,6 +90,7 @@ class HHC_Generator(Base_Generator):
         #W,SOL = utils.permute_adjacency_twin(W,SOL)
         
         B = weight_matrix_to_tensor_representation(W)
+        SOL = self._solution_conversion(SOL, connectivity_to_dgl(B))
         return (B,SOL)
     
     @classmethod

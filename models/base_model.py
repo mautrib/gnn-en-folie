@@ -54,5 +54,5 @@ class GNN_Abstract_Base_Class(DummyClass):
             lr = get_lr(optim)
             self.log('lr',lr)
 
-    def on_epoch_start(self) -> None:
+    def on_train_epoch_start(self) -> None:
         self._log_lr()

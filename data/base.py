@@ -14,8 +14,7 @@ class Base_Generator(torch.utils.data.Dataset):
         l_data_dgl = []
         for data,target in tqdm.tqdm(l_data):
             elt_dgl = connectivity_to_dgl(data, **kwargs)
-            target_dgl = self._solution_conversion(target, elt_dgl)
-            l_data_dgl.append((elt_dgl,target_dgl))
+            l_data_dgl.append((elt_dgl,target))
         print("Conversion ended.")
         return l_data_dgl
 

@@ -1,8 +1,10 @@
 from torch.utils.data import DataLoader
 from dgl import batch as dglbatch
 from models import check_dgl_compatibility
+from toolbox.conversions import edge_format_to_dense_tensor
 import toolbox.maskedtensor as maskedtensor
 import logging
+import torch
 
 from data.tsp import TSP_Generator
 from data.mcp import MCP_Generator, MCP_Generator_True
@@ -54,8 +56,31 @@ def check_maskedtensor_compatibility(use_maskedtensor, problem, force_check=True
         else:
             logging.exception(warning_str)
 
-def tensor_to_pytorch(generator, batch_size=32, shuffle=False, num_workers=4, **kwargs):
-    pytorch_loader = DataLoader(generator, batch_size=batch_size,shuffle=shuffle, num_workers=num_workers)
+def _collate_fn_tensor_node(samples_list):
+    bs = len(samples_list)
+    inputs = [input for (input, _) in samples_list]
+    input_batch = torch.stack(inputs)
+
+    target_list = [target.ndata['solution'].squeeze(-1) for (_,target) in samples_list]
+    target_batch = torch.stack(target_list)
+    return (input_batch,target_batch)
+
+def _collate_fn_tensor_edge(samples_list):
+    inputs = [input for (input, _) in samples_list]
+    input_batch = torch.stack(inputs)
+
+    target_list = [edge_format_to_dense_tensor(target.edata['solution'].squeeze(-1), target) for (_,target) in samples_list]
+    target_batch = torch.stack(target_list)
+    return (input_batch,target_batch)
+
+def tensor_to_pytorch(generator, embed, batch_size=32, shuffle=False, num_workers=4, **kwargs):
+    if embed=='edge':
+        collate_fn = _collate_fn_tensor_edge
+    elif embed=='node':
+        collate_fn = _collate_fn_tensor_node
+    else:
+        raise NotImplementedError(f'Collate function for dense tensor and embedding {embed} has not been implemented.')
+    pytorch_loader = DataLoader(generator, batch_size=batch_size,shuffle=shuffle, num_workers=num_workers, collate_fn=collate_fn)
     return pytorch_loader
 
 def _collate_fn_mt(samples_list):
@@ -117,7 +142,8 @@ def get_dataset(config:dict, type:str, dgl_check=True, mt_check=True, dataloader
     elif use_maskedtensor:
         dataloaded = maskedtensor_to_pytorch(dataset,**loader_config, **dataloader_args)
     else:
-        dataloaded = tensor_to_pytorch(dataset,**loader_config, **dataloader_args)
+        embed = config['arch']['embedding']
+        dataloaded = tensor_to_pytorch(dataset, embed,**loader_config, **dataloader_args)
 
     return dataloaded
 
