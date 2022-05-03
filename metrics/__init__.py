@@ -4,6 +4,11 @@ from metrics.mcp import fulledge_total as mcp_fulledge_total, edgefeat_total as 
 from metrics.tsp import tsp_edgefeat_converter_sparsify, tsp_fulledge_compute_f1
 from models.base_model import GNN_Abstract_Base_Class
 
+EMBED_TYPES = {
+    'rsnode': 'node',
+    'rsedge': 'edge'
+}
+
 def get_trainval_fulledge_metric(problem):
     if problem=='tsp':
         return tsp_fulledge_compute_f1
@@ -127,6 +132,7 @@ def assemble_metric_function(preprocess_function, eval_function, preprocess_addi
 def setup_trainval_metric(pl_model: GNN_Abstract_Base_Class, config: dict, soft=True)-> None:
     problem = config['problem']
     embed = config['arch']['embedding']
+    embed = EMBED_TYPES.get(embed, embed)
     eval = config['arch']['eval']
     try:
         preprocess_function = get_preprocessing(embed, eval, problem)
@@ -142,6 +148,7 @@ def setup_trainval_metric(pl_model: GNN_Abstract_Base_Class, config: dict, soft=
 def setup_test_metric(pl_model: GNN_Abstract_Base_Class, config: dict)-> None:
     problem = config['problem']
     embed = config['arch']['embedding']
+    embed = EMBED_TYPES.get(embed, embed)
     eval = config['arch']['eval']
 
     preprocess_function = get_preprocessing(embed, eval, problem)
