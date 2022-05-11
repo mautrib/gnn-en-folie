@@ -52,7 +52,7 @@ def fulledge_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suff
         
         true_pos = len(target_clique_set.intersection(inferred_clique))
         total_count = target_clique_size
-        l_acc.append(float(len(target_clique_set.intersection(inferred_clique))/target_clique_size))
+        l_acc.append(float(true_pos/total_count))
 
         size_inf = inf_clique_size
         size_planted = target_clique_size
