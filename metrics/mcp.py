@@ -68,7 +68,7 @@ def fulledge_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suff
         suffix = '-' + suffix
     temp_d = {f'bs{suffix}-accuracy': l_acc, f'bs{suffix}-size_error_percentage': l_sep, f'bs{suffix}-size_inf': l_size_inf, f'bs{suffix}-size_planted': l_size_planted}
     final_dict = {}
-    for key, value in temp_d:
+    for key, value in temp_d.items():
         final_dict[key+'_std'] = np.std(value)
         final_dict[key] = np.mean(value)
     return final_dict
