@@ -18,7 +18,9 @@ DUMMY_MODELS = {
 
 FGNN_EMBEDDING_DICT = {
     'edge': FGNN_Edge,
-    'node': FGNN_Node
+    'node': FGNN_Node,
+    'rsedge': FGNN_Edge,
+    'rsnode': FGNN_Node
 }
 
 DGL_EMBEDDING_DICT = {

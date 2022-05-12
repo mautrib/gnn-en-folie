@@ -26,6 +26,7 @@ class MCP_Generator_Hard(Base_Generator):
     proportion=0.1
 
     def __init__(self, name, args):
+        self.init_args = args
         self.edge_density = args['edge_density']
         self.clique_size = int(args['clique_size'])
         num_examples = args['num_examples_' + name]
@@ -60,7 +61,9 @@ class MCP_Generator_Hard(Base_Generator):
                     break
             l_scores.append(score)
         sorted_idx = np.argsort(l_scores)
-        sorted_idx_reduced = sorted_idx[:int(self.num_example*self.proportion)]
+        real_num_examples = int(self.num_examples*self.proportion)
+        sorted_idx_reduced = sorted_idx[:real_num_examples]
+        print(f'Score limit: {l_scores[sorted_idx[real_num_examples]]}/{l_scores[sorted_idx[real_num_examples+1]]}')
         l_data = [l_data[i] for i in sorted_idx_reduced]
         return l_data
 
@@ -120,7 +123,9 @@ class MCP_Generator_True_Hard(Base_Generator):
                     break
             l_scores.append(score)
         sorted_idx = np.argsort(l_scores)
-        sorted_idx_reduced = sorted_idx[:int(self.num_example*self.proportion)]
+        real_num_examples = int(self.num_examples*self.proportion)
+        sorted_idx_reduced = sorted_idx[:real_num_examples]
+        print(f'Score limit: {l_scores[sorted_idx[real_num_examples]]}/{l_scores[sorted_idx[real_num_examples+1]]}')
         l_data = [l_data[i] for i in sorted_idx_reduced]
         return l_data
     

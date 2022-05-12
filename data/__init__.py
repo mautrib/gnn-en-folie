@@ -22,6 +22,10 @@ TRAIN_VAL_TEST_LOOKUP = {
 
 MASKEDTENSOR_PROBLEMS = ('tsp_mt','tsp_bgnn')
 
+EMBED_TYPES = {
+    'rsnode': 'node',
+    'rsedge': 'edge'
+}
 
 def get_generator_class(problem_key):
     if problem_key == 'tsp':
@@ -146,6 +150,7 @@ def get_dataset(config:dict, type:str, dgl_check=True, mt_check=True, dataloader
         dataloaded = maskedtensor_to_pytorch(dataset,**loader_config, **dataloader_args)
     else:
         embed = config['arch']['embedding']
+        embed = EMBED_TYPES.get(embed, embed)
         dataloaded = tensor_to_pytorch(dataset, embed,**loader_config, **dataloader_args)
 
     return dataloaded

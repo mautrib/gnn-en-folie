@@ -9,6 +9,8 @@ EMBED_TYPES = {
     'rsedge': 'edge'
 }
 
+MCP_VARIANTS = ('mcp', 'mcphard', 'mcptrue', 'mcptruehard')
+
 def get_trainval_fulledge_metric(problem):
     if problem=='tsp':
         return tsp_fulledge_compute_f1
@@ -22,7 +24,7 @@ def get_trainval_fulledge_metric(problem):
         raise NotImplementedError(f"Train/val metric for fulledge problem {problem} has not been implemented.")
 
 def get_test_fulledge_metric(problem):
-    if problem in ('mcp', 'mcptrue'):
+    if problem in MCP_VARIANTS:
         return mcp_fulledge_total
     else:
         raise NotImplementedError(f"Test metric for fulledge problem {problem} has not been implemented.")
@@ -40,20 +42,20 @@ def get_trainval_edgefeat_metric(problem):
         raise NotImplementedError(f"Train/val metric for edge problem {problem} has not been implemented.")
 
 def get_test_edgefeat_metric(problem):
-    if problem in ('mcp', 'mcptrue'):
+    if problem in MCP_VARIANTS:
         return mcp_edgefeat_total
     else:
         raise NotImplementedError(f"Test metric for edge problem {problem} has not been implemented.")
 
 def get_trainval_node_metric(problem):
-    if problem in ('mcp', 'mcptrue'):
+    if problem in MCP_VARIANTS:
         return node_compute_f1
     elif problem == 'sbm':
         return node_compute_f1
     raise NotImplementedError(f"Train/val metric for node problem {problem} has not been implemented.")
 
 def get_test_node_metric(problem):
-    if problem in ('mcp', 'mcptrue'):
+    if problem in MCP_VARIANTS:
         return node_total
     elif problem == 'sbm':
         return node_total
@@ -86,12 +88,12 @@ def get_preprocessing(embed, eval, problem):
         if eval=='edge':
             if problem=='tsp':
                 return tsp_edgefeat_converter_sparsify
-            elif problem in ('mcp', 'mcptrue', 'sbm', 'hhc'):
+            elif problem in (MCP_VARIANTS + ('sbm', 'hhc')):
                 return edgefeat_converter
             else:
                 raise NotImplementedError(f"Preprocessing for {embed=}, {eval=}, {problem=} not implemented")
         elif eval=='fulledge':
-            if problem in ('mcp','mcptrue', 'sbm','tsp'):
+            if problem in (MCP_VARIANTS + ('sbm','tsp')):
                 return fulledge_converter
             else:
                 raise NotImplementedError(f"Preprocessing for {embed=}, {eval=}, {problem=} not implemented")
@@ -99,7 +101,7 @@ def get_preprocessing(embed, eval, problem):
             raise NotImplementedError(f"Unknown eval '{eval}' for embedding type 'edge'.")
     elif embed=='node':
         if eval=='node':
-            if problem in ('mcp','mcptrue', 'sbm','tsp'):
+            if problem in (MCP_VARIANTS + ('sbm', 'hhc')):
                 return node_converter
             else:
                 raise NotImplementedError(f"Preprocessing for {embed=}, {eval=}, {problem=} not implemented")
