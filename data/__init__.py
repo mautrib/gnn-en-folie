@@ -1,5 +1,6 @@
 from torch.utils.data import DataLoader
 from dgl import batch as dglbatch
+from data.mcphard import MCP_Generator_Hard, MCP_Generator_True_Hard
 from models import check_dgl_compatibility
 from toolbox.conversions import edge_format_to_dense_tensor
 import toolbox.maskedtensor as maskedtensor
@@ -24,22 +25,24 @@ MASKEDTENSOR_PROBLEMS = ('tsp_mt','tsp_bgnn')
 
 def get_generator_class(problem_key):
     if problem_key == 'tsp':
-        Generator_Class = TSP_Generator
+        return TSP_Generator
     elif problem_key == 'tsp_mt':
-        Generator_Class = TSP_MT_Generator
+        return TSP_MT_Generator
     elif problem_key == 'tsp_bgnn':
-        Generator_Class = TSP_BGNN_Generator
+        return TSP_BGNN_Generator
     elif problem_key == 'mcp':
-        Generator_Class = MCP_Generator
+        return MCP_Generator
     elif problem_key == 'mcptrue':
-        Generator_Class = MCP_Generator_True
+        return MCP_Generator_True
+    elif problem_key == 'mcphard':
+        return MCP_Generator_Hard
+    elif problem_key == 'mcptruehard':
+        return MCP_Generator_True_Hard 
     elif problem_key == 'sbm':
-        Generator_Class = SBM_Generator
+        return SBM_Generator
     elif problem_key == 'hhc':
-        Generator_Class = HHC_Generator
-    else:
-        raise NotImplementedError(f"Generator for problem {problem_key} hasn't been implemented or defined in data/__init__.py yet.")
-    return Generator_Class
+        return HHC_Generator
+    raise NotImplementedError(f"Generator for problem {problem_key} hasn't been implemented or defined in data/__init__.py yet.")
 
 def check_maskedtensor_compatibility(use_maskedtensor, problem, force_check=True):
     problem_uses_mt = problem in MASKEDTENSOR_PROBLEMS
