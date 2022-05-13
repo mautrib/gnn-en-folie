@@ -89,6 +89,12 @@ arch: # Architecture and model
             in_dim_edge: 1
             hidden_dim: 64
             n_classes: 2
+        gcn:
+            in_features: 1
+            hidden_features: 64
+            n_classes: 2
+            n_layers: 2
+            depth_of_mlp: 3
 
 observers:
     use: Yes

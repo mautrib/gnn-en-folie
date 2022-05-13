@@ -1,3 +1,4 @@
+from models.dgl.gcn import GCN, GCN_Edge
 from models.dgl_edge import DGL_Edge
 from models.dgl_node import DGL_Node
 from models.fgnn_edge import FGNN_Edge
@@ -32,9 +33,11 @@ MODULE_DICT = {
     'fgnn' : {  'edge': Simple_Edge_Embedding,
                 'node': Simple_Node_Embedding,   
                 'rsedge': Res_Scaled_Model,
-                'rsnode': RS_Node_Embedding    },
+                'rsnode': RS_Node_Embedding     },
     'gatedgcn' : {  'edge': GatedGCNNet_Edge,
-                    'node': GatedGCNNet_Node    }
+                    'node': GatedGCNNet_Node    },
+    'gcn': {    'edge' : GCN_Edge,
+                'node' : GCN                    }
 }
 
 NOT_DGL_ARCHS = ('fgnn', )
