@@ -192,3 +192,5 @@ class GINEdgeSimple(nn.Module):
         g.apply_edges(_edge_feat)
         
         return g.edata['e']
+    
+    
