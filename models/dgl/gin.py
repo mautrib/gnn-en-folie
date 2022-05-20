@@ -176,40 +176,11 @@ class GIN(nn.Module):
         return score_over_layer
 
 
-class GINEdge(nn.Module):
-    """GIN model"""
-    def __init__(self, n_layers, depth_of_mlp, in_features, hidden_features,
-                 n_classes, final_dropout=0., learn_eps=False, graph_pooling_type='sum',
-                 neighbor_pooling_type='sum'):
-        """model parameters setting
-
-        Parameters
-        ---------
-        n_layers: int
-            The number of linear layers in the neural network
-        depth_of_mlp: int
-            The number of linear layers in mlps
-        in_features: int
-            The dimensionality of input features
-        hidden_features: int
-            The dimensionality of hidden units at ALL layers
-        n_classes: int
-            The number of classes for prediction
-        final_dropout: float
-            dropout ratio on the final linear layer
-        learn_eps: boolean
-            If True, learn epsilon to distinguish center nodes from neighbors
-            If False, aggregate neighbors and center nodes altogether.
-        neighbor_pooling_type: str
-            how to aggregate neighbors (sum, mean, or max)
-        graph_pooling_type: str
-            how to aggregate entire nodes in a graph (sum, mean or max)
-
-        """
-        super(GINEdge, self).__init__()
-        self.gin = GIN(n_layers, depth_of_mlp, in_features, hidden_features,
-                 n_classes, final_dropout, learn_eps, graph_pooling_type,
-                 neighbor_pooling_type)
+class GINEdgeSimple(nn.Module):
+    """GIN model with an edge embedding at the end."""
+    def __init__(self, *args, **kwargs):
+        super(GINEdgeSimple, self).__init__()
+        self.gin = GIN(*args, **kwargs)
     
     def forward(self, g, h, e=None):
         h = self.gin(g,h)
