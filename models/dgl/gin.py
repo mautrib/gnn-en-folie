@@ -208,11 +208,8 @@ class GINEdge(nn.Module):
         self.ginlayers = torch.nn.ModuleList()
         self.batch_norms = torch.nn.ModuleList()
 
-        for layer in range(self.n_layers - 1):
-            if layer == 0:
-                mlp = MLP(depth_of_mlp, in_features, hidden_features, hidden_features)
-            else:
-                mlp = MLP(depth_of_mlp, hidden_features, hidden_features, hidden_features)
+        for layer in range(self.n_layers):
+            mlp = MLP(depth_of_mlp, hidden_features, hidden_features, hidden_features)
 
             self.ginlayers.append(
                 GINConv(ApplyNodeFunc(mlp), neighbor_pooling_type, 0, self.learn_eps))

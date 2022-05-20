@@ -90,6 +90,7 @@ class GCN_Edge(nn.Module): #Same as above, but using a final step to apply
             e = torch.cat([edges.src['h'], edges.dst['h']], dim=1)
             e = self.MLP_layer(e)
             return {'e': e}
+        g.ndata['h'] = h
         g.apply_edges(_edge_feat)
         
         return g.edata['e']
