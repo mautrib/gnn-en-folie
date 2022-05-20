@@ -119,15 +119,14 @@ class GIN(nn.Module):
         self.n_layers = n_layers
         self.learn_eps = learn_eps
 
+        self.embedding_h = nn.Linear(in_features, hidden_features)
+
         # List of MLPs
         self.ginlayers = torch.nn.ModuleList()
         self.batch_norms = torch.nn.ModuleList()
 
-        for layer in range(self.n_layers - 1):
-            if layer == 0:
-                mlp = MLP(depth_of_mlp, in_features, hidden_features, hidden_features)
-            else:
-                mlp = MLP(depth_of_mlp, hidden_features, hidden_features, hidden_features)
+        for layer in range(self.n_layers):
+            mlp = MLP(depth_of_mlp, hidden_features, hidden_features, hidden_features)
 
             self.ginlayers.append(
                 GINConv(ApplyNodeFunc(mlp), neighbor_pooling_type, 0, self.learn_eps))
@@ -137,12 +136,8 @@ class GIN(nn.Module):
         # which maps the output of different layers into a prediction score
         self.linears_prediction = torch.nn.ModuleList()
 
-        for layer in range(n_layers):
-            if layer == 0:
-                self.linears_prediction.append(
-                    nn.Linear(in_features, n_classes))
-            else:
-                self.linears_prediction.append(
+        for layer in range(self.n_layers + 1):
+            self.linears_prediction.append(
                     nn.Linear(hidden_features, n_classes))
 
         self.drop = nn.Dropout(final_dropout)
@@ -159,10 +154,11 @@ class GIN(nn.Module):
     def forward(self, g, h=None):
         if h is None:
             h = g.ndata['feat']
+        h = self.embedding_h(h.float())
         # list of hidden representation at each layer (including input)
         hidden_rep = [h]
 
-        for i in range(self.n_layers - 1):
+        for i in range(self.n_layers):
             h = self.ginlayers[i](g, h)
             h = self.batch_norms[i](h)
             h = F.relu(h)
@@ -172,8 +168,8 @@ class GIN(nn.Module):
 
         # perform pooling over all nodes in each graph in every layer
         for i, h in enumerate(hidden_rep):
-            pooled_h = self.pool(g, h)
-            score_over_layer += self.drop(self.linears_prediction[i](pooled_h))
+            #pooled_h = self.pool(g, h)
+            score_over_layer += self.drop(self.linears_prediction[i](h))
 
         return score_over_layer
 
