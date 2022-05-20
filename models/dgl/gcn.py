@@ -20,7 +20,7 @@ class GCN(nn.Module):
                  n_classes,
                  n_layers,
                  activation = F.relu,
-                 dropout = 0):
+                 dropout = 0, **kwargs):
         super(GCN, self).__init__()
         self.layers = nn.ModuleList()
         #Embed input
