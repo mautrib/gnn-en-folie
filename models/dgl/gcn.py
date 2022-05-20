@@ -77,7 +77,9 @@ class GCN_Edge(nn.Module): #Same as above, but using a final step to apply
         #For the output
         self.MLP_layer = MLPReadout(2 * hidden_features, n_classes, depth_of_mlp)
 
-    def forward(self, g, h, e):
+    def forward(self, g, h=None,e=None):
+        if h is None:
+            h = g.ndata['feat']
         h = self.embedding_h(h)
         for i, layer in enumerate(self.layers):
             if i != 0:

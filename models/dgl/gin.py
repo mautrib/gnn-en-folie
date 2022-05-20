@@ -254,12 +254,14 @@ class GINEdge(nn.Module):
                 )
             )
 
-    def forward(self, g, h, e):
+    def forward(self, g, h=None, e=None):
         
         def _edge_feat(edges):
             e = torch.cat([edges.src['h'], edges.dst['h']], dim=1)
             return {'e': e}
         
+        if h is None:
+            h = g.ndata['feat']
         h = self.embedding_h(h.float())
         g.ndata['h'] = h
         g.apply_edges(_edge_feat)
