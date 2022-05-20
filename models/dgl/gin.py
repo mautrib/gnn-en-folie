@@ -156,7 +156,9 @@ class GIN(nn.Module):
         else:
             raise NotImplementedError
 
-    def forward(self, g, h):
+    def forward(self, g, h=None):
+        if h is None:
+            h = g.ndata['feat']
         # list of hidden representation at each layer (including input)
         hidden_rep = [h]
 
@@ -182,7 +184,9 @@ class GINEdgeSimple(nn.Module):
         super(GINEdgeSimple, self).__init__()
         self.gin = GIN(*args, **kwargs)
     
-    def forward(self, g, h, e=None):
+    def forward(self, g, h=None, e=None):
+        if h is None:
+            h = g.ndata['feat']
         h = self.gin(g,h)
 
         def _edge_feat(edges):

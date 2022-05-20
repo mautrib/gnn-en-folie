@@ -32,8 +32,10 @@ class GCN(nn.Module):
         self.layers.append(GraphConv(hidden_features, n_classes))
         self.dropout = nn.Dropout(p=dropout)
 
-    def forward(self, g, features):
-        h = self.embedding_h(features)
+    def forward(self, g, h = None):
+        if h is None:
+            h = g.ndata['feat']
+        h = self.embedding_h(h)
         for i, layer in enumerate(self.layers):
             if i != 0:
                 h = self.dropout(h)
