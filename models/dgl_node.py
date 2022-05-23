@@ -1,4 +1,5 @@
 import torch
+import dgl
 
 from models.base_model import GNN_Abstract_Base_Class
 
@@ -24,6 +25,7 @@ class DGL_Node(GNN_Abstract_Base_Class):
     
     def training_step(self, batch, batch_idx):
         g, target = batch
+        g = dgl.add_self_loop(g)
         raw_scores = self(g)
         loss_value = self.loss(raw_scores, target)
         self.log('train_loss', loss_value, sync_dist=self.sync_dist)
@@ -32,6 +34,7 @@ class DGL_Node(GNN_Abstract_Base_Class):
     
     def validation_step(self, batch, batch_idx):
         g, target = batch
+        g = dgl.add_self_loop(g)
         raw_scores = self(g)
         loss_value = self.loss(raw_scores, target)
         self.log('val_loss', loss_value, sync_dist=self.sync_dist)
@@ -40,6 +43,7 @@ class DGL_Node(GNN_Abstract_Base_Class):
     
     def test_step(self, batch, batch_idx, dataloader_idx=None):
         g, target = batch
+        g = dgl.add_self_loop(g)
         raw_scores = self(g)
         loss_value = self.loss(raw_scores, target)
         self.log('test_loss', loss_value, sync_dist=self.sync_dist)
