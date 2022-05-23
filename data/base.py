@@ -2,6 +2,7 @@ import torch
 import os
 import tqdm
 from toolbox.conversions import connectivity_to_dgl
+import dgl
 
 class Base_Generator(torch.utils.data.Dataset):
     def __init__(self, name, path_dataset, num_examples):
@@ -14,6 +15,7 @@ class Base_Generator(torch.utils.data.Dataset):
         l_data_dgl = []
         for data,target in tqdm.tqdm(l_data):
             elt_dgl = connectivity_to_dgl(data, **kwargs)
+            elt_dgl = dgl.add_self_loop(elt_dgl)
             l_data_dgl.append((elt_dgl,target))
         print("Conversion ended.")
         return l_data_dgl

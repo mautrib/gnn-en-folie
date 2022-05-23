@@ -1,6 +1,5 @@
 import torch
 from models.base_model import GNN_Abstract_Base_Class
-import dgl
 
 class DGLEdgeLoss(torch.nn.Module):
     def __init__(self, normalize=torch.nn.Sigmoid(), loss=torch.nn.CrossEntropyLoss(reduction='mean')):
@@ -25,7 +24,6 @@ class DGL_Edge(GNN_Abstract_Base_Class):
     
     def training_step(self, batch, batch_idx):
         g, target = batch
-        g = dgl.add_self_loop(g)
         raw_scores = self(g)
         loss_value = self.loss(raw_scores, target)
         self.log('train_loss', loss_value, sync_dist=self.sync_dist)
@@ -34,7 +32,6 @@ class DGL_Edge(GNN_Abstract_Base_Class):
     
     def validation_step(self, batch, batch_idx):
         g, target = batch
-        g = dgl.add_self_loop(g)
         raw_scores = self(g)
         loss_value = self.loss(raw_scores, target)
         self.log('val_loss', loss_value, sync_dist=self.sync_dist)
@@ -43,7 +40,6 @@ class DGL_Edge(GNN_Abstract_Base_Class):
     
     def test_step(self, batch, batch_idx, dataloader_idx=None):
         g, target = batch
-        g = dgl.add_self_loop(g)
         raw_scores = self(g)
         loss_value = self.loss(raw_scores, target)
         self.log('test_loss', loss_value, sync_dist=self.sync_dist)

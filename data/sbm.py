@@ -67,6 +67,7 @@ class SBM_Generator(Base_Generator):
     def _solution_conversion(cls, target, dgl_graph):
         num_nodes = dgl_graph.num_nodes()
         target_dgl = dgl.graph(dgl_graph.edges(), num_nodes=num_nodes)
+        target_dgl = dgl.add_self_loop(target_dgl)
         edge_classif = dense_tensor_to_edge_format(target, target_dgl)
         node_classif = target[0,:] #Keep the node 0 to a class 1
         node_classif = node_classif.unsqueeze(-1) # Modify it to size (N,1)

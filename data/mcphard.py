@@ -71,6 +71,7 @@ class MCP_Generator_Hard(Base_Generator):
     def _solution_conversion(cls, target, dgl_graph):
         num_nodes = dgl_graph.num_nodes()
         target_dgl = dgl.graph(dgl_graph.edges(), num_nodes=num_nodes)
+        target_dgl = dgl.add_self_loop(target_dgl)
         edge_classif = dense_tensor_to_edge_format(target, target_dgl)
         node_classif = (target.sum(dim=-1)!=0).to(target.dtype) # Get a node classification of shape (N)
         node_classif = node_classif.unsqueeze(-1) # Modify it to size (N,1)
@@ -133,6 +134,7 @@ class MCP_Generator_True_Hard(Base_Generator):
     def _solution_conversion(cls, target, dgl_graph):
         num_nodes = dgl_graph.num_nodes()
         target_dgl = dgl.graph(dgl_graph.edges(), num_nodes=num_nodes)
+        target_dgl = dgl.add_self_loop(target_dgl)
         edge_classif = dense_tensor_to_edge_format(target, target_dgl)
         node_classif = (target.sum(dim=-1)!=0).to(target.dtype) # Get a node classification of shape (N)
         node_classif = node_classif.unsqueeze(-1) # Modify it to size (N,1)

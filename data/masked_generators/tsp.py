@@ -182,6 +182,7 @@ class TSP_MT_Generator(Base_Generator):
     def _solution_conversion(target, dgl_graph):
         num_nodes = dgl_graph.num_nodes()
         target_dgl = dgl.graph(dgl_graph.edges(), num_nodes=num_nodes)
+        target_dgl = dgl.add_self_loop(target_dgl)
         edge_features = dense_tensor_to_edge_format(target, target_dgl)
         target_dgl.edata['solution'] = edge_features
         return target_dgl
