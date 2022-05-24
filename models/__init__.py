@@ -21,8 +21,6 @@ DUMMY_MODELS = {
 FGNN_EMBEDDING_DICT = {
     'edge': FGNN_Edge,
     'node': FGNN_Node,
-    'rsedge': FGNN_Edge,
-    'rsnode': FGNN_Node
 }
 
 DGL_EMBEDDING_DICT = {
@@ -32,9 +30,9 @@ DGL_EMBEDDING_DICT = {
 
 MODULE_DICT = {
     'fgnn' : {  'edge': Simple_Edge_Embedding,
-                'node': Simple_Node_Embedding,   
-                'rsedge': RS_Edge_Embedding,
-                'rsnode': RS_Node_Embedding     },
+                'node': Simple_Node_Embedding},
+    'rsfgnn' : {    'edge' : RS_Edge_Embedding,
+                    'node' : RS_Node_Embedding},
     'gatedgcn' : {  'edge': GatedGCNNet_Edge,
                     'node': GatedGCNNet_Node    },
     'gcn': {    'edge' : GCN_Edge,
@@ -43,7 +41,7 @@ MODULE_DICT = {
                 'node': GIN                     }
 }
 
-NOT_DGL_ARCHS = ('fgnn', )
+NOT_DGL_ARCHS = ('fgnn', 'rsfgnn')
 
 def check_dgl_compatibility(use_dgl, arch_name, dgl_check=True):
     arch_uses_dgl = not(arch_name in NOT_DGL_ARCHS)

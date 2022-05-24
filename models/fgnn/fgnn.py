@@ -121,8 +121,9 @@ class Res_Scaled_Model(nn.Module):
             mlp_block = Scaled_Block(last_layer_features, in_features, self.depth_of_mlp, name=f'block_{i}')
             self.reg_blocks.append(mlp_block)
             last_layer_features = in_features
-        mlp_block = Scaled_Block(in_features,out_features,depth_of_mlp,name=f'block_{self.num_blocks-1}')
+        mlp_block = Scaled_Block(in_features,in_features,depth_of_mlp,name=f'block_{self.num_blocks-1}')
         self.reg_blocks.append(mlp_block)
+        self.last_mlp = nn.Conv2d(in_features,out_features,kernel_size=1, padding=0, bias=True)
 
     def forward(self, x):
         # here x.shape = (bs, n_vertices, n_vertices, n_features=original_features_num)
@@ -137,11 +138,11 @@ class Res_Scaled_Model(nn.Module):
         #x.shape = (bs, n_features, n_vertices, _)
         for block in self.reg_blocks:
             x = x + block(x)
-        # return (bs, n_vertices, n_vertices, n_features=out_features)
+        # return (bs, n_vertices, n_vertices, n_features=in_features)
+        x = self.last_mlp(x)
         return x.permute(0,2,3,1)
 
 
-# TODO refactor
 class RS_Node_Embedding(nn.Module):
     def __init__(self, original_features_num, num_blocks, in_features,out_features, depth_of_mlp, **kwargs):
         """
@@ -178,11 +179,8 @@ class RS_Edge_Embedding(nn.Module):
         self.in_features = in_features
         self.out_features = out_features
         self.depth_of_mlp =depth_of_mlp
-        self.base_model = Res_Scaled_Model(original_features_num, num_blocks, in_features,in_features, depth_of_mlp, **kwargs)
-        self.last_mlp = nn.Conv2d(in_features,out_features,kernel_size=1, padding=0, bias=True)
-
+        self.base_model = Res_Scaled_Model(original_features_num, num_blocks, in_features,out_features, depth_of_mlp, **kwargs)
+        
     def forward(self, x):
         x = self.base_model(x)
-        x = x.permute(0, 3, 1, 2)
-        x = self.last_mlp(x)
-        return  x.permute(0,2,3,1)
+        return  x
