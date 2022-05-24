@@ -95,7 +95,7 @@ class Simple_Edge_Embedding(nn.Module):
 
 
 class Res_Scaled_Model(nn.Module):
-    def __init__(self, original_features_num, num_blocks, in_features, out_features, depth_of_mlp, input_embed=False, **kwargs):
+    def __init__(self, original_features_num, num_blocks, in_features, out_features, depth_of_mlp, input_embed=True, **kwargs):
         """
         take a batch of graphs (bs, n_vertices, n_vertices, in_features)
         and return a batch of graphs with new features
@@ -163,3 +163,26 @@ class RS_Node_Embedding(nn.Module):
         x = self.base_model(x)
         x = self.suffix(x)
         return  x
+
+class RS_Edge_Embedding(nn.Module):
+    def __init__(self, original_features_num, num_blocks, in_features,out_features, depth_of_mlp, **kwargs):
+        """
+        take a batch of graphs (bs, n_vertices, n_vertices, in_features)
+        and return a batch of node embedding (bs, n_vertices, out_features)
+        graphs must have same size inside the batch
+        """
+        super().__init__()
+
+        self.original_features_num = original_features_num
+        self.num_blocks = num_blocks
+        self.in_features = in_features
+        self.out_features = out_features
+        self.depth_of_mlp =depth_of_mlp
+        self.base_model = Res_Scaled_Model(original_features_num, num_blocks, in_features,in_features, depth_of_mlp, **kwargs)
+        self.last_mlp = nn.Conv2d(in_features,out_features,kernel_size=1, padding=0, bias=True)
+
+    def forward(self, x):
+        x = self.base_model(x)
+        x = x.permute(0, 3, 1, 2)
+        x = self.last_mlp(x)
+        return  x.permute(0,2,3,1)
