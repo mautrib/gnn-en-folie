@@ -184,6 +184,7 @@ class GINEdgeSimple(nn.Module):
         if h is None:
             h = g.ndata['feat']
         h = self.gin(g,h)
+        g.ndata['h'] = h
 
         def _edge_feat(edges):
             e = torch.cat([edges.src['h'], edges.dst['h']], dim=1)
