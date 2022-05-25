@@ -5,7 +5,7 @@ from models.dgl_node import DGL_Node
 from models.fgnn_edge import FGNN_Edge
 from models.fgnn_node import FGNN_Node
 from models.dgl.gatedgcn import GatedGCNNet_Edge, GatedGCNNet_Node
-from models.fgnn.fgnn import Simple_Edge_Embedding, Simple_Node_Embedding, Res_Scaled_Model, RS_Node_Embedding
+from models.fgnn.fgnn import Simple_Edge_Embedding, Simple_Node_Embedding, RS_Edge_Embedding, RS_Node_Embedding
 from models.baselines.base import Edge_NodeDegree
 import logging
 
@@ -21,8 +21,6 @@ DUMMY_MODELS = {
 FGNN_EMBEDDING_DICT = {
     'edge': FGNN_Edge,
     'node': FGNN_Node,
-    'rsedge': FGNN_Edge,
-    'rsnode': FGNN_Node
 }
 
 DGL_EMBEDDING_DICT = {
@@ -32,9 +30,9 @@ DGL_EMBEDDING_DICT = {
 
 MODULE_DICT = {
     'fgnn' : {  'edge': Simple_Edge_Embedding,
-                'node': Simple_Node_Embedding,   
-                'rsedge': Res_Scaled_Model,
-                'rsnode': RS_Node_Embedding     },
+                'node': Simple_Node_Embedding},
+    'rsfgnn' : {    'edge' : RS_Edge_Embedding,
+                    'node' : RS_Node_Embedding},
     'gatedgcn' : {  'edge': GatedGCNNet_Edge,
                     'node': GatedGCNNet_Node    },
     'gcn': {    'edge' : GCN_Edge,
@@ -43,7 +41,7 @@ MODULE_DICT = {
                 'node': GIN                     }
 }
 
-NOT_DGL_ARCHS = ('fgnn', )
+NOT_DGL_ARCHS = ('fgnn', 'rsfgnn')
 
 def check_dgl_compatibility(use_dgl, arch_name, dgl_check=True):
     arch_uses_dgl = not(arch_name in NOT_DGL_ARCHS)

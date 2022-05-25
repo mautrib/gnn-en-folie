@@ -72,9 +72,9 @@ train: # Training parameters, you can add any Pytorch Lightning Trainer Argument
 
 arch: # Architecture and model
     use_dgl: Yes
-    name: gcn #fgnn, gcn, gatedgcn, gin
+    name: gcn #rsfgnn, fgnn, gcn, gatedgcn, gin
     embedding: edge #node or edge
-    eval: edge
+    eval: edge #node or edge (same as embedding for now!)
     configs:
         fgnn:
             num_blocks: 3
@@ -83,6 +83,13 @@ arch: # Architecture and model
             out_features: 1
             depth_of_mlp: 3
             input_embed: No #To remove for tsp and hhc
+        rsfgnn:
+            num_blocks: 3
+            original_features_num: 2 
+            in_features: 64
+            out_features: 1
+            depth_of_mlp: 3
+            input_embed: Yes #To remove for tsp and hhc
         gatedgcn:
             n_layers: 3
             in_dim: 1
