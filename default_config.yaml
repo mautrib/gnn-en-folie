@@ -34,7 +34,7 @@ data:
                 fill_param: 5 
             
     test: #Test data generation parameters
-        num_examples_test: 1000
+        num_examples_test: 960
         n_vertices: 100
         min_vertices: 50
         max_vertices: 100
@@ -59,8 +59,8 @@ data:
                 fill_param: 5
 
 train: # Training parameters, you can add any Pytorch Lightning Trainer Arguments and pytorch DataLoader arguments
-    max_epochs: 2
-    batch_size:  2
+    max_epochs: 100
+    batch_size:  64
     optim_args:
         lr: !!float 1e-5
         scheduler_step: 3
@@ -72,7 +72,7 @@ train: # Training parameters, you can add any Pytorch Lightning Trainer Argument
 
 arch: # Architecture and model
     use_dgl: No
-    name: rsfgnn #rsfgnn, fgnn, gcn, gatedgcn, gin
+    name: rsfgnn #rsfgnn, fgnn, gcn, gatedgcn, gat, gin
     embedding: edge #node or edge
     eval: edge #node or edge (same as embedding for now!)
     configs:
