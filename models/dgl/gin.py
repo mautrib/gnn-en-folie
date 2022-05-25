@@ -14,7 +14,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from dgl.nn.pytorch.conv import GINConv
 from dgl.nn.pytorch.glob import SumPooling, AvgPooling, MaxPooling
-
+from copy import deepcopy
 
 class ApplyNodeFunc(nn.Module):
     """Update the node feature hv with MLP, BN and ReLU."""
@@ -178,7 +178,13 @@ class GINEdgeSimple(nn.Module):
     """GIN model with an edge embedding at the end."""
     def __init__(self, *args, **kwargs):
         super(GINEdgeSimple, self).__init__()
-        self.gin = GIN(*args, **kwargs)
+        depth_of_mlp = kwargs['depth_of_mlp']
+        hidden_features = kwargs['hidden_features']
+        n_classes = kwargs['n_classes']
+        gin_node_dict = deepcopy(kwargs)
+        gin_node_dict['n_classes'] = hidden_features
+        self.gin = GIN(*args, **gin_node_dict)
+        self.MLP_layer = MLP(depth_of_mlp, 2 * hidden_features, hidden_features, n_classes)
     
     def forward(self, g, h=None, e=None):
         if h is None:
