@@ -168,7 +168,7 @@ class GIN(nn.Module):
 
         # perform pooling over all nodes in each graph in every layer
         for i, h in enumerate(hidden_rep):
-            #pooled_h = self.pool(g, h)
+            pooled_h = self.pool(g, h)
             score_over_layer += self.drop(self.linears_prediction[i](h))
 
         return score_over_layer
