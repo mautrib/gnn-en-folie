@@ -120,6 +120,7 @@ def main():
     parser = argparse.ArgumentParser(description='Main file for creating experiments.')
     parser.add_argument('command', metavar='c', choices=['train','test'],
                     help='Command to execute : train or test')
+    parser.add_argument('--config', default='dafault_config.yaml', type=str, help='Name of the configuration file.')
     args = parser.parse_args()
     if args.command=='train':
         training=True
@@ -128,7 +129,7 @@ def main():
         training=False
         default_test=True
     
-    config = get_config()
+    config = get_config(args.config)
     config = utils.clean_config(config)
     trainer=None
     if training:
