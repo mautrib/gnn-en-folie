@@ -1,5 +1,5 @@
 from models.dgl.gcn import GCN, GCN_Edge
-from models.dgl.gin import GIN, GINEdge
+from models.dgl.gin import GIN, GINEdge, GINEdgeSimple
 from models.dgl_edge import DGL_Edge
 from models.dgl_node import DGL_Node
 from models.fgnn_edge import FGNN_Edge
@@ -37,8 +37,10 @@ MODULE_DICT = {
                     'node': GatedGCNNet_Node    },
     'gcn': {    'edge' : GCN_Edge,
                 'node' : GCN                    },
-    'gin': {    'edge': GINEdge,
-                'node': GIN                     }
+    'gin': {    'edge' : GINEdge,
+                'node' : GIN                     },
+    'ginsimple': {  'edge' : GINEdgeSimple,
+                    'node' : GIN}
 }
 
 NOT_DGL_ARCHS = ('fgnn', 'rsfgnn')
