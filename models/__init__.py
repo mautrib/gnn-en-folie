@@ -1,3 +1,4 @@
+from models.dgl.gat import GAT
 from models.dgl.gcn import GCN, GCN_Edge
 from models.dgl.gin import GIN, GINEdge, GINEdgeSimple
 from models.dgl_edge import DGL_Edge
@@ -38,9 +39,10 @@ MODULE_DICT = {
     'gcn': {    'edge' : GCN_Edge,
                 'node' : GCN                    },
     'gin': {    'edge' : GINEdge,
-                'node' : GIN                     },
+                'node' : GIN                    },
     'ginsimple': {  'edge' : GINEdgeSimple,
-                    'node' : GIN}
+                    'node' : GIN                },
+    'gat': {    'node': GAT                     }
 }
 
 NOT_DGL_ARCHS = ('fgnn', 'rsfgnn')
