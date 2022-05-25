@@ -25,7 +25,7 @@ def get_trainval_fulledge_metric(problem):
 
 def get_test_fulledge_metric(problem):
     if problem in MCP_VARIANTS:
-        return mcp_fulledge_total
+        return fulledge_compute_f1
     else:
         raise NotImplementedError(f"Test metric for fulledge problem {problem} has not been implemented.")
 
@@ -43,7 +43,7 @@ def get_trainval_edgefeat_metric(problem):
 
 def get_test_edgefeat_metric(problem):
     if problem in MCP_VARIANTS:
-        return mcp_edgefeat_total
+        return edgefeat_compute_f1
     else:
         raise NotImplementedError(f"Test metric for edge problem {problem} has not been implemented.")
 
@@ -56,9 +56,9 @@ def get_trainval_node_metric(problem):
 
 def get_test_node_metric(problem):
     if problem in MCP_VARIANTS:
-        return node_total
+        return node_compute_f1
     elif problem == 'sbm':
-        return node_total
+        return node_compute_f1
     raise NotImplementedError(f"Test metric for node problem {problem} has not been implemented.")
 
 def get_trainval_metric(eval, problem):
