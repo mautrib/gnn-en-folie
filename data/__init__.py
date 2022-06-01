@@ -109,7 +109,7 @@ def _collate_fn_dgl(samples_list):
     target_batch = dglbatch(target_list)
     return (input_batch,target_batch)
 
-def dgl_to_pytorch(generator, batch_size=32, shuffle=False, num_workers=4, **kwargs):
+def dgl_to_pytorch(generator, batch_size, shuffle=False, num_workers=4, **kwargs):
     pytorch_loader = DataLoader(generator, batch_size=batch_size,shuffle=shuffle, num_workers=num_workers, collate_fn=_collate_fn_dgl)
     return pytorch_loader
 
