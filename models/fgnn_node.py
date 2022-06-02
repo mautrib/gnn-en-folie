@@ -12,9 +12,6 @@ class NodeClassifLoss(torch.nn.Module):
         self.normalize = normalize
 
     def forward(self, raw_scores, target):
-        """
-        outputs is the output of siamese network (bs,n_vertices,n_vertices)
-        """
         preds = self.normalize(raw_scores)
         loss = self.loss(preds,target)
         return torch.mean(loss)

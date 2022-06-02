@@ -89,7 +89,7 @@ class GIN(nn.Module):
     """GIN model"""
     def __init__(self, n_layers, depth_of_mlp, in_features, hidden_features,
                  n_classes, final_dropout=0., learn_eps=False, graph_pooling_type='sum',
-                 neighbor_pooling_type='sum'):
+                 neighbor_pooling_type='mean'):
         """model parameters setting
 
         Parameters
@@ -138,7 +138,7 @@ class GIN(nn.Module):
 
         for layer in range(self.n_layers + 1):
             self.linears_prediction.append(
-                    nn.Linear(hidden_features, n_classes))
+                    nn.Linear(hidden_features, n_classes)) #hidden_features))#
 
         self.drop = nn.Dropout(final_dropout)
 
@@ -168,10 +168,9 @@ class GIN(nn.Module):
 
         # perform pooling over all nodes in each graph in every layer
         for i, h in enumerate(hidden_rep):
-            pooled_h = self.pool(g, h)
             score_over_layer += self.drop(self.linears_prediction[i](h))
 
-        return score_over_layer
+        return score_over_layer 
 
 
 class GINEdgeSimple(nn.Module):

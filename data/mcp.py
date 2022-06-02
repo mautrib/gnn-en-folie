@@ -35,7 +35,7 @@ class MCP_Generator(Base_Generator):
 
     def _plant_clique(self, W):
         assert isinstance(self.clique_size, int), f"Clique size is not an int {self.clique_size=}"
-        W, K = self.add_clique(W, self.clique_size)
+        W, K = self.add_clique_base(W, self.clique_size)
         B = adjacency_matrix_to_tensor_representation(W)
 
         k_size = len(torch.where(K.sum(dim=-1)!=0)[0])
@@ -93,8 +93,9 @@ class MCP_Generator(Base_Generator):
         W[:k,:k] = torch.ones((k,k)) - torch.eye(k)
         return W, K
 
+# Why do we need this?
     @staticmethod
-    def add_clique(W,k):
+    def add_clique_old(W,k):
         K = torch.zeros((len(W),len(W)))
         indices = random.sample(range(len(W)),k)
         l_indices = [(id_i,id_j) for id_i in indices for id_j in indices if id_i!=id_j] #Makes all the pairs of indices where we put the clique (get rid of diagonal terms)

@@ -4,7 +4,7 @@ import dgl
 from models.base_model import GNN_Abstract_Base_Class
 
 class DGLNodeLoss(torch.nn.Module):
-    def __init__(self, normalize=torch.nn.Sigmoid(), loss=torch.nn.CrossEntropyLoss(reduction='mean')):
+    def __init__(self, normalize=torch.nn.LogSoftmax(dim=1),loss=torch.nn.NLLLoss(reduction='mean')):
         super(DGLNodeLoss, self).__init__()
         self.loss = loss
         self.normalize = normalize

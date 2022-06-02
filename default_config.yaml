@@ -62,7 +62,7 @@ train: # Training parameters, you can add any Pytorch Lightning Trainer Argument
     max_epochs: 100
     batch_size:  64
     optim_args:
-        lr: !!float 1e-5
+        lr: !!float 1e-3
         scheduler_step: 3
         scheduler_factor: 0.5
         lr_stop: !!float 1e-7

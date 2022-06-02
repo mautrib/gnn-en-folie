@@ -8,10 +8,15 @@ from data import get_test_dataset, get_train_val_datasets
 from metrics import setup_metric
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
-from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_lightning.callbacks import Callback, EarlyStopping, ModelCheckpoint
 import argparse
 
 import toolbox.wandb_helper as wbh
+
+class CB_val_train(Callback):
+    def on_validation_start(self, trainer, pl_module):
+        trainer.model.train()
+
 
 def get_config(filename='default_config.yaml') -> dict:
     with open(filename, 'r') as f:
@@ -68,7 +73,7 @@ def get_trainer_config(config: dict, only_test=False) -> dict:
     if not only_test:
         early_stopping = EarlyStopping('lr', verbose=True, mode='max', patience=1+config['train']['max_epochs'], divergence_threshold=config['train']['optim_args']['lr_stop'])
         checkpoint_callback = ModelCheckpoint(monitor="val_loss", save_top_k=1, verbose=True)
-        trainer_config['callbacks'] = [early_stopping, checkpoint_callback]
+        trainer_config['callbacks'] = [early_stopping, checkpoint_callback, CB_val_train()]
     clean_config = utils.restrict_dict_to_function(pl.Trainer.__init__, trainer_config)
     return clean_config
 
