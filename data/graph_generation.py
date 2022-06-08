@@ -14,7 +14,7 @@ def generates(name):
 def generate_erdos_renyi_netx(p, N):
     """ Generate random Erdos Renyi graph """
     g = networkx.erdos_renyi_graph(N, p)
-    W = networkx.adjacency_matrix(g).todense()
+    W = networkx.to_numpy_array(g)
     return g, torch.as_tensor(W, dtype=torch.float)
 
 @generates("BarabasiAlbert")
@@ -22,7 +22,7 @@ def generate_barabasi_albert_netx(p, N):
     """ Generate random Barabasi Albert graph """
     m = int(p*(N -1)/2)
     g = networkx.barabasi_albert_graph(N, m)
-    W = networkx.adjacency_matrix(g).todense()
+    W = networkx.to_numpy_array(g)
     return g, torch.as_tensor(W, dtype=torch.float)
 
 @generates("Regular")
@@ -34,5 +34,5 @@ def generate_regular_graph_netx(p, N):
     if N * d % 2 == 1:
         d += 1
     g = networkx.random_regular_graph(d, N)
-    W = networkx.adjacency_matrix(g).todense()
+    W = networkx.to_numpy_array(g)
     return g, torch.as_tensor(W, dtype=torch.float)
