@@ -1,7 +1,7 @@
 import os
 from data.base import Base_Generator
 from data.mcp import MCP_Generator, MCP_Generator_True
-from metrics.common import edgefeat_AUC
+from metrics.common import edgefeat_ROC_AUC
 from metrics.preprocess import edgefeat_converter
 from models.baselines.base import Edge_NodeDegree
 from toolbox import utils
@@ -13,7 +13,7 @@ import tqdm
 
 BASELINE = Edge_NodeDegree()
 PREPROCESS = edgefeat_converter
-METRIC = edgefeat_AUC
+METRIC = edgefeat_ROC_AUC
 
 class MCP_Generator_Hard(Base_Generator):
     """
