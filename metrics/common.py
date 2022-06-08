@@ -53,7 +53,7 @@ def edgefeat_compute_f1(l_inferred, l_targets) -> dict:
     
     return {'precision': np.mean(l_prec), 'recall': np.mean(l_rec), 'f1': np.mean(l_f1), 'precision_std': np.std(l_prec), 'recall_std': np.std(l_rec), 'f1_std': np.std(l_f1)}
 
-def edgefeat_AUC(l_inferred, l_targets) -> dict:
+def edgefeat_ROC_AUC(l_inferred, l_targets) -> dict:
     """
      - inferred : list of tensor of shape (N_edges_i)
      - target : list of tensors of shape (N_edges_i) (For DGL, from target.edata['solution'], for FGNN, converted)
@@ -64,11 +64,27 @@ def edgefeat_AUC(l_inferred, l_targets) -> dict:
     for inferred, target in zip(l_inferred, l_targets):
         auc = float(sk_metrics.roc_auc_score(target.detach().cpu().numpy(), inferred.detach().cpu().numpy()))
         l_auc.append(auc)
-    return {'auc': np.mean(l_auc), 'auc_std': np.std(l_auc)}
+    return {'roc_auc': np.mean(l_auc), 'roc_auc_std': np.std(l_auc)}
+
+def edgefeat_PR_AUC(l_inferred, l_targets) -> dict:
+    """
+     - inferred : list of tensor of shape (N_edges_i)
+     - target : list of tensors of shape (N_edges_i) (For DGL, from target.edata['solution'], for FGNN, converted)
+    """
+    assert len(l_inferred)==len(l_targets), f"Size of inferred and target different : {len(l_inferred)} and {len(l_targets)}."
+    bs = len(l_inferred)
+    l_auc = []
+    for inferred, target in zip(l_inferred, l_targets):
+        precision, recall, _ = sk_metrics.precision_recall_curve(target.detach().cpu().numpy(), inferred.detach().cpu().numpy())
+        auc = sk_metrics.auc(recall, precision)
+        auc = float(auc)
+        l_auc.append(auc)
+    return {'pr_auc': np.mean(l_auc), 'pr_auc_std': np.std(l_auc)}
 
 def edgefeat_total(l_inferred, l_targets) -> dict:
     final_dict = {}
-    final_dict.update(edgefeat_AUC(l_inferred, l_targets))
+    final_dict.update(edgefeat_ROC_AUC(l_inferred, l_targets))
+    final_dict.update(edgefeat_PR_AUC(l_inferred, l_targets))
     final_dict.update(edgefeat_compute_accuracy(l_inferred, l_targets))
     final_dict.update(edgefeat_compute_f1(l_inferred, l_targets))
     return final_dict
@@ -124,7 +140,7 @@ def fulledge_compute_f1(l_inferred, l_targets):
         l_f1.append(f1)
     return {'precision': np.mean(l_prec), 'recall': np.mean(l_rec), 'f1': np.mean(l_f1), 'precision_std': np.std(l_prec), 'recall_std': np.std(l_rec), 'f1_std': np.std(l_f1)}
         
-def fulledge_AUC(l_inferred, l_targets) -> dict:
+def fulledge_ROC_AUC(l_inferred, l_targets) -> dict:
     """
      - l_inferred : list of tensor of shape (N_i, N_i)
      - l_targets : list of tensors of shape (N__i, N_i) (For DGL, from target.edata['solution'], for FGNN, converted)
@@ -135,11 +151,26 @@ def fulledge_AUC(l_inferred, l_targets) -> dict:
     for inferred, target in zip(l_inferred, l_targets):
         auc = float(sk_metrics.roc_auc_score(target.detach().cpu().numpy().flatten(), inferred.detach().cpu().to(int).numpy().flatten()))
         l_auc.append(auc)
-    return {'auc': np.mean(l_auc), 'auc_std': np.std(l_auc)}
+    return {'roc_auc': np.mean(l_auc), 'roc_auc_std': np.std(l_auc)}
+
+def fulledge_PR_AUC(l_inferred, l_targets) -> dict:
+    """
+     - l_inferred : list of tensor of shape (N_i, N_i)
+     - l_targets : list of tensors of shape (N__i, N_i) (For DGL, from target.edata['solution'], for FGNN, converted)
+    """
+    assert len(l_inferred)==len(l_targets), f"Size of inferred and target different : {len(l_inferred)} and {len(l_targets)}."
+    bs = len(l_inferred)
+    l_auc = []
+    for inferred, target in zip(l_inferred, l_targets):
+        precision, recall, _ = sk_metrics.precision_recall_curve(target.detach().cpu().numpy(), inferred.detach().cpu().numpy())
+        auc = sk_metrics.auc(recall, precision)
+        auc = float(auc)
+    return {'pr_auc': np.mean(l_auc), 'pr_auc_std': np.std(l_auc)}
 
 def fulledge_total(l_inferred, l_targets) -> dict:
     final_dict = {}
-    final_dict.update(fulledge_AUC(l_inferred, l_targets))
+    final_dict.update(fulledge_ROC_AUC(l_inferred, l_targets))
+    final_dict.update(fulledge_PR_AUC(l_inferred, l_targets))
     final_dict.update(fulledge_compute_accuracy(l_inferred, l_targets))
     final_dict.update(fulledge_compute_f1(l_inferred, l_targets))
     return final_dict
@@ -160,16 +191,24 @@ def node_compute_f1(l_inferred, l_targets) -> dict:
     """
     return edgefeat_compute_f1(l_inferred, l_targets)
 
-def node_AUC(l_inferred, l_targets) -> dict:
+def node_ROC_AUC(l_inferred, l_targets) -> dict:
     """
      - l_inferred : list of tensors of shape (N_nodes_i)
      - l_targets  : list of tensors of shape (N_nodes_i)
     """
-    return edgefeat_AUC(l_inferred, l_targets)
+    return edgefeat_ROC_AUC(l_inferred, l_targets)
+
+def node_PR_AUC(l_inferred, l_targets) -> dict:
+    """
+     - l_inferred : list of tensors of shape (N_nodes_i)
+     - l_targets  : list of tensors of shape (N_nodes_i)
+    """
+    return edgefeat_PR_AUC(l_inferred, l_targets)
 
 def node_total(l_inferred, l_targets) -> dict:
     final_dict = {}
-    final_dict.update(node_AUC(l_inferred, l_targets))
+    final_dict.update(node_ROC_AUC(l_inferred, l_targets))
+    final_dict.update(node_PR_AUC(l_inferred, l_targets))
     final_dict.update(node_compute_accuracy(l_inferred, l_targets))
     final_dict.update(node_compute_f1(l_inferred, l_targets))
     return final_dict
