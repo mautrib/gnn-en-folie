@@ -11,6 +11,12 @@ conda env create -f environment.yaml
 
 To do experiments with the Travelling Salesman Problem, please also install the [PyConcorde](https://github.com/jvkersch/pyconcorde) wrapper for Concorde TSP Solver.
 
+To use exact Maximum Clique Problem solvers, install [PMC](https://github.com/ryanrossi/pmc/). It may be needed to `make` the `libpmc.so` file. For that use explicitly the command: 
+```
+make libpmc.so
+```
+And then move it to the library directory (`/usr/lib/` on Unix).
+
 ## Training and testing basics
 
 To train a model, simply modify the parameters of our pipeline in the [default config file](default_config.yaml), and then run:
