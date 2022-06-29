@@ -62,9 +62,21 @@ def clean_config(config):
     for key in config['data']['train']['problems']: #Other data values for train/val
         if key!=problem_key:
             del clean_one['data']['train']['problems'][key]
+    if not problem_key in clean_one['data']['train']['problems'].keys():
+        if problem_key[:3]=='mcp':
+            try:
+                clean_one['data']['train']['problems'][problem_key] = copy.deepcopy(config['data']['train']['problems']['mcp'])
+            except KeyError:
+                pass
     for key in config['data']['test']['problems']:  #Other data values for test
         if key!=problem_key:
             del clean_one['data']['test']['problems'][key]
+    if not problem_key in clean_one['data']['test']['problems'].keys():
+        if problem_key[:3]=='mcp':
+            try:
+                clean_one['data']['test']['problems'][problem_key] = copy.deepcopy(config['data']['test']['problems']['mcp'])
+            except KeyError:
+                pass
     for key in config['arch']['configs']:  #Other architectures
         if key!=arch_name:
             del clean_one['arch']['configs'][key]

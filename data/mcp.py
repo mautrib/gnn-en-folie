@@ -184,7 +184,7 @@ class MCP_Generator_True(Base_Generator):
                              .format(self.generative_model))
         assert isinstance(self.clique_size, int), f"Clique size is not an int {self.clique_size=}"
         if self.clique_size!=0:
-            W, K = MCP_Generator.add_clique(W, self.clique_size)
+            W, K = MCP_Generator.add_clique_base(W, self.clique_size)
         return W
     
     @classmethod
