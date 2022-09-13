@@ -1,6 +1,6 @@
 from metrics.preprocess import edgefeat_converter, fulledge_converter, node_converter
 from metrics.common import fulledge_compute_f1, edgefeat_compute_f1, node_compute_f1, node_total
-from metrics.mcp import fulledge_total as mcp_fulledge_total, edgefeat_total as mcp_edgefeat_total
+from metrics.mcp import fulledge_total as mcp_fulledge_total, edgefeat_total as mcp_edgefeat_total, node_total as mcp_node_total
 from metrics.tsp import tsp_edgefeat_converter_sparsify, tsp_fulledge_compute_f1
 from models.base_model import GNN_Abstract_Base_Class
 

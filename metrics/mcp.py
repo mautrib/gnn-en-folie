@@ -23,9 +23,9 @@ def edgefeat_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suff
 def edgefeat_total(l_inferred, l_targets, l_adjacency) -> dict:
     final_dict = {}
     final_dict.update(common_edgefeat_total(l_inferred, l_targets))
-    final_dict.update(edgefeat_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suffix='1280'))
-    final_dict.update(edgefeat_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=500, suffix='500'))
-    final_dict.update(edgefeat_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=100, suffix='100'))
+    beam_sizes = [1280,500,100,10,1]
+    for beam_size in beam_sizes:
+        final_dict.update(edgefeat_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=beam_size, suffix=str(beam_size)))
     return final_dict
 
 ###FULLEDGE
@@ -76,9 +76,9 @@ def fulledge_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suff
 def fulledge_total(l_inferred, l_targets, l_adjacency) -> dict:
     final_dict = {}
     final_dict.update(common_fulledge_total(l_inferred, l_targets))
-    final_dict.update(fulledge_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suffix='1280'))
-    final_dict.update(fulledge_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=500, suffix='500'))
-    final_dict.update(fulledge_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=100, suffix='100'))
+    beam_sizes = [1280,500,100,10,1]
+    for beam_size in beam_sizes:
+        final_dict.update(fulledge_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=beam_size, suffix=str(beam_size)))
     return final_dict
 
 ## NODE
@@ -89,15 +89,17 @@ def node_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suffix='
      - l_targets : list of tensors of shape (N_nodes_i) (For DGL, from target.ndata['solution'], for FGNN, converted)
      - l_adjacency: list of couples of tensors of size ((N_edges_i), (N_edges_i)) corresponding to the edges (src, dst) of the graph
     """
-    assert len(l_inferred)==len(l_targets)==len(l_adjacency), f"Size of inferred, target and ajacency different : {len(l_inferred)}, {len(l_targets)} and {len(l_adjacency)}."
+    assert len(l_inferred)==len(l_targets)==len(l_adjacency), f"Size of inferred, target and adjacency different : {len(l_inferred)}, {len(l_targets)} and {len(l_adjacency)}."
     bs = len(l_inferred)
+    l_edges = [node[src]*node[dst] for node,(src,dst) in zip(l_inferred,l_adjacency)]
+    l_edge_targets = [node[src]*node[dst] for node,(src,dst) in zip(l_targets,l_adjacency)]
 
-    raise NotImplementedError
+    return edgefeat_beamsearch(l_edges, l_edge_targets, l_adjacency, beam_size=beam_size, suffix=suffix)
 
 def node_total(l_inferred, l_targets, l_adjacency) -> dict:
     final_dict = {}
     final_dict.update(common_node_total(l_inferred, l_targets))
-    final_dict.update(node_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suffix='1280'))
-    final_dict.update(node_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=500, suffix='500'))
-    final_dict.update(node_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=100, suffix='100'))
+    beam_sizes = [1280,500,100,10,1]
+    for beam_size in beam_sizes:
+        final_dict.update(node_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=beam_size, suffix=str(beam_size)))
     return final_dict
