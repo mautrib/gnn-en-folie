@@ -1,6 +1,7 @@
 import os
 import yaml
 import wandb
+from wandb.errors import CommError
 
 def find_exp_dir(base_path, exp_name):
     dirs = [name for name in os.listdir(base_path) if exp_name in name]
@@ -26,11 +27,17 @@ def download_model(project, run_id, entity='', version='best'):
     """
     Downloads a model from a wandb run
     """
-    exp_path = os.path.join(entity, project, run_id)
+    l = run_id.split('/')
+    if len(l)==2:
+        project,run_id = l
+    elif len(l)==3:
+        entity, project, run_id = l
     wapi = wandb.Api()
+    base_proj = os.path.join(entity, project)
+    exp_path = os.path.join(base_proj, run_id)
     run = wapi.run(exp_path)
     model_name = f'model-{run_id}:{version}'
-    model_artifact_name = os.path.join(entity, project, model_name)
+    model_artifact_name = os.path.join(base_proj, model_name)
     print(f"Getting model artifact from : {model_artifact_name}")
     artifact = wapi.artifact(model_artifact_name)
     art_dir = artifact.download('_temp')
@@ -68,3 +75,20 @@ def find_entity():
     run = wapi.run(f"{entity}/{project}/{rid}")
     run.delete()
     return entity
+
+def get_train_value(run):
+    config = run.config
+    problem = config['problem']
+    if problem == 'sbm':
+        p_outer = config['data']['train']['problems'][problem]['p_outer']
+        p_inter = config['data']['train']['problems'][problem]['p_inter']
+        value = p_outer-p_inter
+    elif problem == 'mcp':
+        value = config['data']['train']['problems'][problem]['clique_size']
+    elif problem == 'mcptrue':
+        value = config['data']['train']['problems']['mcp']['clique_size']
+    elif problem == 'hhc':
+        value = config['data']['train']['problems'][problem]['fill_param']
+    else:
+        raise NotImplementedError(f'Problem {problem} config modification not implemented.')
+    return value
