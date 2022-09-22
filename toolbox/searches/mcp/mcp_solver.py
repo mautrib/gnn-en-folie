@@ -209,6 +209,7 @@ class MCP_Solver():
         bs,n,_ = adjs.shape
         self.reset(bs)
 
+        t0 = time.time()
         counter = 0
         while counter<bs or not self.no_threads_left():
             for thread_slot in range(self.max_threads):
@@ -220,6 +221,9 @@ class MCP_Solver():
                     new_thread.start()
                     counter+=1
             self.clean_threads()
+        tf = time.time()
+        dt = tf-t0
+        print(f"Time taken for solving MCP : {dt}s ({dt/len(self.adjs)}s/it)")
         
 
 
