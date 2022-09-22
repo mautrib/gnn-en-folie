@@ -151,6 +151,7 @@ class MCP_Solver():
         assert max_threads>0, "Thread number put to 0."
         self.max_threads = max_threads
         self.threads = [None for _ in range(self.max_threads)]
+        self.start_times = [None for _ in range(self.max_threads)]
         self.solutions  = []
         self.erase_mode=erase_mode
         self.verbose = verbose
@@ -180,10 +181,11 @@ class MCP_Solver():
         for i,thread in enumerate(self.threads):
             if thread is not None and thread.done:
                 id = thread.threadID
-                if self.verbose: print(f"Solution {id} on thread {i} is done.")
+                if self.verbose: print(f"Solution {id} on thread {i} is done. ({time.time()-self.start_times[i]}s)")
                 self.solutions[id] = thread.solutions
                 thread.clear(erase_mode=self.erase_mode)
                 self.threads[i] = None
+                self.start_times[i] = None
     
     def reset(self,bs):
         self.solutions = [list() for _ in range(bs)]
@@ -218,6 +220,7 @@ class MCP_Solver():
                     new_thread = self.thread_class(counter,adj,name=os.path.join(self.path,f'tmp-mcp-{counter}-{exp_name}'))
                     #print(f"Putting problem {counter} on thread {thread_slot}")
                     self.threads[thread_slot] = new_thread
+                    self.start_times[thread_slot] = time.time()
                     new_thread.start()
                     counter+=1
             self.clean_threads()
