@@ -152,6 +152,7 @@ class MCP_Solver():
         self.max_threads = max_threads
         self.threads = [None for _ in range(self.max_threads)]
         self.start_times = [None for _ in range(self.max_threads)]
+        self.times = []
         self.solutions  = []
         self.erase_mode=erase_mode
         self.verbose = verbose
@@ -181,7 +182,10 @@ class MCP_Solver():
         for i,thread in enumerate(self.threads):
             if thread is not None and thread.done:
                 id = thread.threadID
-                if self.verbose: print(f"Solution {id} on thread {i} is done. ({time.time()-self.start_times[i]}s)")
+                tf = time.time()
+                time_taken = tf-self.start_times[i]
+                self.l_times.append(time_taken)
+                if self.verbose: print(f"Solution {id} on thread {i} is done. ({time_taken}s)")
                 self.solutions[id] = thread.solutions
                 thread.clear(erase_mode=self.erase_mode)
                 self.threads[i] = None
@@ -226,7 +230,7 @@ class MCP_Solver():
             self.clean_threads()
         tf = time.time()
         dt = tf-t0
-        print(f"Time taken for solving MCP : {dt}s ({dt/len(self.adjs)}s/it)")
+        print(f"Time taken for solving MCP : {dt}s ({np.mean(self.l_times)}s/it \pm {np.std(self.l_times)})")
         
 
 
