@@ -184,7 +184,7 @@ class MCP_Solver():
                 id = thread.threadID
                 tf = time.time()
                 time_taken = tf-self.start_times[i]
-                self.l_times.append(time_taken)
+                self.times.append(time_taken)
                 if self.verbose: print(f"Solution {id} on thread {i} is done. ({time_taken}s)")
                 self.solutions[id] = thread.solutions
                 thread.clear(erase_mode=self.erase_mode)
@@ -230,7 +230,7 @@ class MCP_Solver():
             self.clean_threads()
         tf = time.time()
         dt = tf-t0
-        print(f"Time taken for solving MCP : {dt}s ({np.mean(self.l_times)}s/it \pm {np.std(self.l_times)})")
+        print(f"Time taken for solving MCP : {dt}s ({np.mean(self.times)}s/it \pm {np.std(self.times)})")
         
 
 
