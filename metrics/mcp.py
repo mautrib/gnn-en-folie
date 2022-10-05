@@ -2,7 +2,7 @@ import torch
 import dgl
 import numpy as np
 from toolbox.conversions import dgl_dense_adjacency, edge_format_to_dense_tensor
-from toolbox.searches.mcp import mcp_beam_method
+from toolbox.searches.mcp import mcp_beam_method, mcp_beam_method_node
 from metrics.common import edgefeat_total as common_edgefeat_total, fulledge_total as common_fulledge_total, node_total as common_node_total
 
 ###EDGEFEAT
@@ -91,15 +91,49 @@ def node_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suffix='
     """
     assert len(l_inferred)==len(l_targets)==len(l_adjacency), f"Size of inferred, target and adjacency different : {len(l_inferred)}, {len(l_targets)} and {len(l_adjacency)}."
     bs = len(l_inferred)
-    l_edges = [node[src]*node[dst] for node,(src,dst) in zip(l_inferred,l_adjacency)]
-    l_edge_targets = [node[src]*node[dst] for node,(src,dst) in zip(l_targets,l_adjacency)]
+    sizes = [(len(target),len(target)) for target in l_targets]
+    base_adjs = [torch.zeros(size) for size in sizes]
+    for base_adj,(src,dst) in zip(base_adjs,l_adjacency):
+        base_adj[src,dst] = 1
 
-    return edgefeat_beamsearch(l_edges, l_edge_targets, l_adjacency, beam_size=beam_size, suffix=suffix)
+    l_cliques = mcp_beam_method_node(base_adjs, l_inferred, normalize=False, beam_size=beam_size)
+
+    l_acc = []
+    l_size_inf = []
+    l_size_planted = []
+    l_sep = []
+    for inferred_clique, target in zip(l_cliques, l_targets):
+        target_clique_set = set(torch.where(target>0)[0].detach().cpu().numpy())
+        target_clique_size = len(target_clique_set)
+        inf_clique_size = len(inferred_clique)
+        
+        true_pos = len(target_clique_set.intersection(inferred_clique))
+        total_count = target_clique_size
+        l_acc.append(float(true_pos/total_count))
+
+        size_inf = inf_clique_size
+        size_planted = target_clique_size
+        size_error_percentage = (inf_clique_size-target_clique_size)/target_clique_size
+
+        l_size_inf.append(float(size_inf))
+        l_size_planted.append(float(size_planted))
+        l_sep.append(float(size_error_percentage))
+
+
+    assert np.all(np.array(l_acc))<=1, "Accuracy over 1, not normal."
+    if suffix:
+        suffix = '-' + suffix
+    temp_d = {f'bs{suffix}-accuracy': l_acc, f'bs{suffix}-size_error_percentage': l_sep, f'bs{suffix}-size_inf': l_size_inf, f'bs{suffix}-size_planted': l_size_planted}
+    final_dict = {}
+    for key, value in temp_d.items():
+        final_dict[key+'_std'] = np.std(value)
+        final_dict[key] = np.mean(value)
+    return final_dict
 
 def node_total(l_inferred, l_targets, l_adjacency) -> dict:
     final_dict = {}
     final_dict.update(common_node_total(l_inferred, l_targets))
-    beam_sizes = [1280,500,100,10,1]
+    beam_sizes = [1280,1]
     for beam_size in beam_sizes:
         final_dict.update(node_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=beam_size, suffix=str(beam_size)))
     return final_dict
