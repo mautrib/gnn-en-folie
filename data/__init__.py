@@ -11,6 +11,7 @@ from data.tsp import TSP_Generator
 from data.mcp import MCP_Generator, MCP_Generator_True
 from data.sbm import SBM_Generator
 from data.hhc import HHC_Generator
+from data.rb import RB_Generator
 from data.masked_generators.tsp import TSP_MT_Generator
 from data.masked_generators.tsp_bgnn import TSP_BGNN_Generator
 
@@ -46,6 +47,8 @@ def get_generator_class(problem_key):
         return SBM_Generator
     elif problem_key == 'hhc':
         return HHC_Generator
+    elif problem_key == 'rb':
+        return RB_Generator
     raise NotImplementedError(f"Generator for problem {problem_key} hasn't been implemented or defined in data/__init__.py yet.")
 
 def check_maskedtensor_compatibility(use_maskedtensor, problem, force_check=True):
