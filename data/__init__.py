@@ -127,7 +127,7 @@ def get_generator(config:dict, type:str):
     if problem_key=='tsp_bgnn':
         problem_specific_config = {}
     else:
-        problem_specific_config = config['data'][lookup_key]['problems'][problem_key]
+        problem_specific_config = config['data'][lookup_key]['problems'].get(problem_key, {})
 
     dataset = Generator_Class(type, {**data_config, **problem_specific_config})
     return dataset
