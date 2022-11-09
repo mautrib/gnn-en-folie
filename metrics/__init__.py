@@ -52,12 +52,16 @@ def get_trainval_node_metric(problem):
         return node_compute_f1
     elif problem == 'sbm':
         return node_compute_f1
+    elif problem == 'rb':
+        return node_compute_f1
     raise NotImplementedError(f"Train/val metric for node problem {problem} has not been implemented.")
 
 def get_test_node_metric(problem):
     if problem in MCP_VARIANTS:
         return node_compute_f1
     elif problem == 'sbm':
+        return node_compute_f1
+    elif problem == 'rb':
         return node_compute_f1
     raise NotImplementedError(f"Test metric for node problem {problem} has not been implemented.")
 
@@ -101,7 +105,7 @@ def get_preprocessing(embed, eval, problem):
             raise NotImplementedError(f"Unknown eval '{eval}' for embedding type 'edge'.")
     elif embed=='node':
         if eval=='node':
-            if problem in (MCP_VARIANTS + ('sbm', 'hhc')):
+            if problem in (MCP_VARIANTS + ('sbm', 'hhc', 'rb')):
                 return node_converter
             else:
                 raise NotImplementedError(f"Preprocessing for {embed=}, {eval=}, {problem=} not implemented")
