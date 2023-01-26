@@ -7,7 +7,7 @@ from models.fgnn_edge import FGNN_Edge
 from models.fgnn_node import FGNN_Node
 from models.dgl.gatedgcn import GatedGCNNet_Edge, GatedGCNNet_Node
 from models.fgnn.fgnn import Simple_Edge_Embedding, Simple_Node_Embedding, RS_Edge_Embedding, RS_Node_Embedding
-from models.baselines.base import Edge_NodeDegree
+from models.baselines.base import Edge_NodeDegree, Node_NodeDegree
 import logging
 
 DUMMY_MODEL_NAMES = ('node_degree',)
@@ -16,7 +16,8 @@ def is_dummy(name):
     return name in DUMMY_MODEL_NAMES
 
 DUMMY_MODELS = {
-    'node_degree': {'edge': Edge_NodeDegree}
+    'node_degree': {'edge': Edge_NodeDegree,
+                    'node': Node_NodeDegree}
 }
 
 FGNN_EMBEDDING_DICT = {
