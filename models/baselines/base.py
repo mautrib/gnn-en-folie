@@ -2,6 +2,7 @@ from models.base_model import DummyClass
 from dgl import DGLGraph
 import torch
 from models.dgl_edge import DGLEdgeLoss
+from models.dgl_node import DGLNodeLoss
 
 class UntrainableClass(DummyClass):
     def __init__(self, batch_size=None, sync_dist=True):
@@ -18,6 +19,29 @@ class UntrainableClass(DummyClass):
 
     def configure_optimizers(self, *args, **kwargs):
         pass
+
+class Node_NodeDegree(UntrainableClass):
+
+    def __init__(self, batch_size=None, sync_dist=True):
+        super().__init__(batch_size, sync_dist)
+        self.loss = DGLNodeLoss(normalize=torch.nn.Identity())
+    
+    def forward(self, x: DGLGraph):
+        assert torch.all(x.in_degrees()==x.out_degrees()), "Graph is not symmetric !"
+        degrees = x.in_degrees().to(float)
+        degrees_norm = (degrees - degrees.mean())/degrees.std()
+        proba_node = degrees_norm.sigmoid()
+        proba_node = proba_node.unsqueeze(-1)
+        final = torch.cat((1-proba_node, proba_node), dim=-1)
+        return final
+    
+    def test_step(self, batch, batch_idx, dataloader_idx=None):
+        g, target = batch
+        raw_scores = self(g)
+        loss_value = self.loss(raw_scores, target)
+        self.log('test_loss', loss_value, sync_dist=self.sync_dist)
+        self.log_metric('test', data=g, raw_scores=raw_scores, target=target)
+        return loss_value
 
 class Edge_NodeDegree(UntrainableClass):
 
