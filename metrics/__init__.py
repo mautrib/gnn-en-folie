@@ -50,6 +50,8 @@ def get_test_edgefeat_metric(problem):
 def get_trainval_node_metric(problem):
     if problem in MCP_VARIANTS:
         return node_compute_f1
+    elif problem == 'mis':
+        return node_compute_f1
     elif problem == 'sbm':
         return node_compute_f1
     elif problem == 'rb':
@@ -105,7 +107,7 @@ def get_preprocessing(embed, eval, problem):
             raise NotImplementedError(f"Unknown eval '{eval}' for embedding type 'edge'.")
     elif embed=='node':
         if eval=='node':
-            if problem in (MCP_VARIANTS + ('sbm', 'hhc', 'rb')):
+            if problem in (MCP_VARIANTS + ('mis','sbm', 'hhc', 'rb')):
                 return node_converter
             else:
                 raise NotImplementedError(f"Preprocessing for {embed=}, {eval=}, {problem=} not implemented")

@@ -9,6 +9,7 @@ import torch
 
 from data.tsp import TSP_Generator
 from data.mcp import MCP_Generator, MCP_Generator_True
+from data.mis import MIS_Generator
 from data.sbm import SBM_Generator
 from data.hhc import HHC_Generator
 from data.rb import RB_Generator
@@ -43,6 +44,8 @@ def get_generator_class(problem_key):
         return MCP_Generator_Hard
     elif problem_key == 'mcptruehard':
         return MCP_Generator_True_Hard 
+    elif problem_key == 'mis':
+        return MIS_Generator
     elif problem_key == 'sbm':
         return SBM_Generator
     elif problem_key == 'hhc':
