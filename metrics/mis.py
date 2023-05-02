@@ -4,6 +4,7 @@ import numpy as np
 from toolbox.conversions import dgl_dense_adjacency, edge_format_to_dense_tensor
 from toolbox.searches.mcp import mcp_beam_method, mcp_beam_method_node
 from metrics.common import edgefeat_total as common_edgefeat_total, fulledge_total as common_fulledge_total, node_total as common_node_total
+from metrics.mcp import node_beamsearch as mcp_node_beamsearch
 
 ###EDGEFEAT
 def edgefeat_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suffix='') -> dict:
@@ -46,10 +47,7 @@ def node_beamsearch(l_inferred, l_targets, l_adjacency, beam_size=1280, suffix='
         t[src,dst] = 1
         t[dst,src] = 1
     l_adjacency_inverted = [torch.where(t==0) for t in l_t]
-    l_src = [[src for src,_ in inverted_edges] for inverted_edges in l_adjacency_inverted]
-    l_dst = [[dst for _,dst in inverted_edges] for inverted_edges in l_adjacency_inverted]
-    l_adjacency_out = [(src, dst) for (src, dst) in zip(l_src, l_dst)]
-    return node_beamsearch(l_inferred, l_targets, l_adjacency_out, beam_size=beam_size, suffix=suffix)
+    return mcp_node_beamsearch(l_inferred, l_targets, l_adjacency_inverted, beam_size=beam_size, suffix=suffix)
     
 
 def node_total(l_inferred, l_targets, l_adjacency) -> dict:
