@@ -57,7 +57,6 @@ class DummyClass(pl.LightningModule):
                     torch.std(torch.tensor(value)),
                     sync_dist=sync_dist,
                 )
-                print(f"{prefix}/metrics/{key}", torch.std(torch.tensor(value)))
 
 
 class GNN_Abstract_Base_Class(DummyClass):
