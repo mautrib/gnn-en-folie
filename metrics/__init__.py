@@ -1,6 +1,7 @@
 from metrics.preprocess import edgefeat_converter, fulledge_converter, node_converter
 from metrics.common import fulledge_compute_f1, edgefeat_compute_f1, node_compute_f1, node_total
 from metrics.mcp import fulledge_total as mcp_fulledge_total, edgefeat_total as mcp_edgefeat_total, node_total as mcp_node_total
+from metrics.mis import fulledge_total as mis_fulledge_total, edgefeat_total as mis_edgefeat_total, node_total as mis_node_total
 from metrics.tsp import tsp_edgefeat_converter_sparsify, tsp_fulledge_compute_f1
 from models.base_model import GNN_Abstract_Base_Class
 
@@ -15,6 +16,8 @@ def get_trainval_fulledge_metric(problem):
     if problem=='tsp':
         return tsp_fulledge_compute_f1
     elif problem=='mcp':
+        return fulledge_compute_f1
+    elif problem=='mis':
         return fulledge_compute_f1
     elif problem=='sbm':
         return fulledge_compute_f1
@@ -33,6 +36,8 @@ def get_trainval_edgefeat_metric(problem):
     if problem=='tsp':
         return edgefeat_compute_f1
     elif problem=='mcp':
+        return edgefeat_compute_f1
+    elif problem=='mis':
         return edgefeat_compute_f1
     elif problem=='hhc':
         return edgefeat_compute_f1
@@ -61,6 +66,8 @@ def get_trainval_node_metric(problem):
 def get_test_node_metric(problem):
     if problem in MCP_VARIANTS:
         return node_compute_f1
+    elif problem == 'mis':
+        return mis_node_total
     elif problem == 'sbm':
         return node_compute_f1
     elif problem == 'rb':
