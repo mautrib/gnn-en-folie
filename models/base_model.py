@@ -36,7 +36,7 @@ class DummyClass(pl.LightningModule):
                 self.log(f"{prefix}/metrics/{key}", value, sync_dist=sync_dist)
 
     def is_std(self, key):
-        return len(key > 4) and key[:-4] == "_std"
+        return len(key) > 4 and key[:-4] == "_std"
 
     def reset_std(self):
         self.std_dict = dict()
