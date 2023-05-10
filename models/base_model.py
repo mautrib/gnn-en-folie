@@ -35,14 +35,18 @@ class DummyClass(pl.LightningModule):
             for key, value in value_dict.items():
                 self.log(f"{prefix}/metrics/{key}", value, sync_dist=sync_dist)
 
+    def is_std(self, key):
+        return len(key > 4) and key[:-4] == "_std"
+
+    def reset_std(self):
+        self.std_dict = dict()
+
     def log_metric(self, prefix, sync_dist=None, **kwargs):
         if self.use_metric and self._metric_function is not None:
             value_dict = self._metric_function(**kwargs)
             for key, value in value_dict.items():
-                if (
-                    key[:-4] == "_std"
-                ):  # If it's an std metric, delete it. Then go to next entry
-                    del value_dict[key]
+                if self.is_std(key):
+                    # Don't do anything to std keys
                     continue
                 if key not in self.std_dict:
                     self.std_dict[key] = []
@@ -50,7 +54,8 @@ class DummyClass(pl.LightningModule):
             if sync_dist is None:
                 sync_dist = self.sync_dist
             for key, value in value_dict.items():
-                self.log(f"{prefix}/metrics/{key}", value, sync_dist=sync_dist)
+                if self.is_std(key):
+                    self.log(f"{prefix}/metrics/{key}", value, sync_dist=sync_dist)
             for key, value in self.std_dict.items():
                 self.log(
                     f"{prefix}/metrics/{key}",
