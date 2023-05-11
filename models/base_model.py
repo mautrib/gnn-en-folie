@@ -66,6 +66,7 @@ class DummyClass(pl.LightningModule):
 
     def on_test_epoch_start(self) -> None:
         self.reset_std()
+        print("\nTesting starting: resetting std_dict")
         return super().on_test_epoch_start()
 
 
