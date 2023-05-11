@@ -63,6 +63,10 @@ class DummyClass(pl.LightningModule):
                     sync_dist=sync_dist,
                 )
 
+    def on_test_epoch_start(self) -> None:
+        self.reset_std()
+        return super().on_test_epoch_start()
+
 
 class GNN_Abstract_Base_Class(DummyClass):
     def __init__(self, model, optim_args, batch_size=None, sync_dist=True):
