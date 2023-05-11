@@ -54,7 +54,7 @@ class DummyClass(pl.LightningModule):
             if sync_dist is None:
                 sync_dist = self.sync_dist
             for key, value in value_dict.items():
-                if self.is_std(key):
+                if not (self.is_std(key)):
                     self.log(f"{prefix}/metrics/{key}", value, sync_dist=sync_dist)
             for key, value in self.std_dict.items():
                 self.log(
