@@ -56,18 +56,25 @@ class DummyClass(pl.LightningModule):
             for key, value in value_dict.items():
                 if not (self.is_std(key)):
                     self.log(f"{prefix}/metrics/{key}", value, sync_dist=sync_dist)
-            for key, value in self.std_dict.items():
-                std_value = torch.std(torch.tensor(value))
-                self.log(
-                    f"{prefix}/metrics/{key}_std",
-                    std_value,
-                    sync_dist=sync_dist,
-                )
 
     def on_test_epoch_start(self) -> None:
         self.reset_std()
         print("\nTesting starting: resetting std_dict")
         return super().on_test_epoch_start()
+
+    def log_std_dict(self):
+        for key, value in self.std_dict.items():
+            std_value = torch.std(torch.tensor(value))
+            self.log(
+                f"test/metrics/{key}_std",
+                std_value,
+                sync_dist=self.sync_dist,
+            )
+
+    def on_test_epoch_end(self) -> None:
+        print("\nTesting ending: logging std_dict")
+        self.log_std_dict()
+        return super().on_test_epoch_end()
 
 
 class GNN_Abstract_Base_Class(DummyClass):
