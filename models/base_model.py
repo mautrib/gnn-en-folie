@@ -57,9 +57,10 @@ class DummyClass(pl.LightningModule):
                 if not (self.is_std(key)):
                     self.log(f"{prefix}/metrics/{key}", value, sync_dist=sync_dist)
             for key, value in self.std_dict.items():
+                std_value = torch.std(torch.tensor(value))
                 self.log(
-                    f"{prefix}/metrics/{key}",
-                    torch.std(torch.tensor(value)),
+                    f"{prefix}/metrics/{key}_std",
+                    std_value,
                     sync_dist=sync_dist,
                 )
 
