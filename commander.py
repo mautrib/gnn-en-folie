@@ -12,6 +12,7 @@ from pytorch_lightning.callbacks import Callback, EarlyStopping, ModelCheckpoint
 import argparse
 
 import toolbox.wandb_helper as wbh
+import wandb
 
 class CB_val_train(Callback):
     def on_validation_start(self, trainer, pl_module):
@@ -29,7 +30,10 @@ def get_observer(config: dict):
     utils.check_dir(path)
     observer = config['observers']['observer']
     if observer=='wandb':
-        logger = WandbLogger(project=f"{config['project']}_{config['problem']}", log_model="all", save_dir=path)
+        if config['train'].get('strategy',None) is None:
+            logger = WandbLogger(project=f"{config['project']}_{config['problem']}", log_model="all", save_dir=path)
+        else:
+            logger = WandbLogger(project=f"{config['project']}_{config['problem']}", log_model="all", save_dir=path, settings=wandb.Settings(start_method="thread"))
         try:
             logger.experiment.config.update(config)
         except AttributeError as ae:
@@ -55,7 +59,10 @@ def load_model(config: dict, path: str, add_metric=True, **add_metric_kwargs) ->
         except (FileNotFoundError) as e:
             if config['observers']['observer']=='wandb':
                 print(f"Failed at finding model locally with error : {e}. Trying to use W&B.")
-                project = f"{config['project']}_{config['problem']}"
+                project = config['project']
+                print(config['project'][:-4], f"_{config['problem']}", flush=True)
+                if config['project'][-4:] != f"_{config['problem']}":
+                    project = f"{config['project']}_{config['problem']}"
                 wb_config, path = wbh.download_model(project, path)
                 PL_Model_Class = get_pl_model(config)
                 pl_model = PL_Model_Class.load_from_checkpoint(path, model=get_torch_model(wb_config), optim_args=get_optim_args(wb_config))
@@ -73,11 +80,12 @@ def get_trainer_config(config: dict, only_test=False) -> dict:
     if not only_test:
         early_stopping = EarlyStopping('lr', verbose=True, mode='max', patience=1+config['train']['max_epochs'], divergence_threshold=config['train']['optim_args']['lr_stop'])
         checkpoint_callback = ModelCheckpoint(monitor="val_loss", save_top_k=1, verbose=True)
-        trainer_config['callbacks'] = [early_stopping, checkpoint_callback, CB_val_train()]
+        too_good_stopping = EarlyStopping(monitor='val/metrics/f1', stopping_threshold=0.99, verbose=True, mode='max', patience=999999)
+        trainer_config['callbacks'] = [early_stopping, too_good_stopping, checkpoint_callback, CB_val_train()]
     clean_config = utils.restrict_dict_to_function(pl.Trainer.__init__, trainer_config)
     return clean_config
 
-def setup_trainer(config: dict, model: GNN_Abstract_Base_Class, watch=True, only_test=False) -> pl.Trainer:
+def setup_trainer(config: dict, model: GNN_Abstract_Base_Class, watch=True, only_test=False, **trainer_add_kwargs) -> pl.Trainer:
     trainer_config = get_trainer_config(config, only_test=only_test)
     if config['observers']['use']:
         logger = get_observer(config)
@@ -86,7 +94,7 @@ def setup_trainer(config: dict, model: GNN_Abstract_Base_Class, watch=True, only
         else:
             if watch: logger.watch(model)
             trainer_config['logger'] = logger
-    trainer = pl.Trainer(**trainer_config)
+    trainer = pl.Trainer(**trainer_config, **trainer_add_kwargs)
     return trainer
 
 def train(config: dict)->pl.Trainer:
@@ -135,6 +143,7 @@ def main():
         default_test=True
     
     config = get_config(args.config)
+    print(f"Using config {args.config}")
     config = utils.clean_config(config)
     trainer=None
     if training:

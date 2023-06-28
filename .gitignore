@@ -22,6 +22,14 @@ lightning_logs/
 #scripts planner files
 *planner_files/
 
+#SLURM log files
+*.err
+*.out
+
+#temporary files
+_temp*
+*/_temp*
+
 #PYTHON GITIGNORE
 # Byte-compiled / optimized / DLL files
 __pycache__/
