@@ -16,7 +16,7 @@ from models.fgnn.fgnn import (
 from models.baselines.base import Edge_NodeDegree, Node_NodeDegree
 import logging
 
-DUMMY_MODEL_NAMES = ("node_degree",)
+DUMMY_MODEL_NAMES = ("node_degree", "nx")
 
 
 def is_dummy(name):
