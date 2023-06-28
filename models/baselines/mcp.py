@@ -14,9 +14,10 @@ class Networkx_Max_Clique(UntrainableClass):
 
     def forward(self, x: dgl.DGLGraph):
         assert torch.all(x.in_degrees() == x.out_degrees()), "Graph is not symmetric !"
-        nxx = dgl.to_networkx(x)
+        adj = x.adjacency_matrix().to_dense()
+        nxx = nx.from_numpy_array(adj.numpy())
         max_clique = nx_max_clique(nxx)
-        proba = torch.zeros(x.number_of_nodes())
+        proba = torch.zeros((x.number_of_nodes(), 1))
         proba[list(max_clique)] = 1
         final = torch.cat((1 - proba, proba), dim=-1)
         return final
