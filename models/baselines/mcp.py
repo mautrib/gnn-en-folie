@@ -7,7 +7,7 @@ from networkx.algorithms.approximation.clique import max_clique as nx_max_clique
 from .base import UntrainableClass
 
 
-class Node_NodeDegree(UntrainableClass):
+class Networkx_Max_Clique(UntrainableClass):
     def __init__(self, batch_size=None, sync_dist=True):
         super().__init__(batch_size, sync_dist)
         self.loss = DGLNodeLoss(normalize=torch.nn.Identity())
@@ -19,12 +19,6 @@ class Node_NodeDegree(UntrainableClass):
         proba = torch.zeros(x.number_of_nodes())
         proba[list(max_clique)] = 1
         final = torch.cat((1 - proba, proba), dim=-1)
-
-        degrees = x.in_degrees().to(float)
-        degrees_norm = (degrees - degrees.mean()) / degrees.std()
-        proba_node = degrees_norm.sigmoid()
-        proba_node = proba_node.unsqueeze(-1)
-        final = torch.cat((1 - proba_node, proba_node), dim=-1)
         return final
 
     def test_step(self, batch, batch_idx, dataloader_idx=None):
