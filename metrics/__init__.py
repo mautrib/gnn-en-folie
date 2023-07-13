@@ -20,7 +20,7 @@ from models.base_model import GNN_Abstract_Base_Class
 
 EMBED_TYPES = {"rsnode": "node", "rsedge": "edge"}
 
-MCP_VARIANTS = ("mcp", "mcphard", "mcptrue", "mcptruehard")
+MCP_VARIANTS = ("mcp", "mcphard", "mcptrue", "mcptruehard", "mcpnx")
 
 
 def get_trainval_fulledge_metric(problem):
